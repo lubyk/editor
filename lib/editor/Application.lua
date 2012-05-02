@@ -10,7 +10,7 @@
 --]]------------------------------------------------------
 require 'mimas'
 require 'mimas.Application'
-local lib          = lk.SubClass(mimas, 'Application')
+local lib          = lk.SubClass(mimas.Application)
 lib.type           = 'editor.Application'
 lib.__index        = lib
 editor.Application = lib

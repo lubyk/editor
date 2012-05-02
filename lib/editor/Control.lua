@@ -6,7 +6,7 @@
   Base class for all control widgets.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.Control = lib
 
 local private = {}

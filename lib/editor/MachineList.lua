@@ -6,7 +6,7 @@
   Displays the list of Machines
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.MachineList = lib
 local private = {}
 

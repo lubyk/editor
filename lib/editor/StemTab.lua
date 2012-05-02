@@ -9,7 +9,7 @@
   dropped to create new processes on the given machine.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.StemTab = lib
 lib.type = 'editor.StemTab'
 -- Sort in MachineView

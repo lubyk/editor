@@ -6,7 +6,7 @@
   Async slider.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(editor, 'Control')
+local lib = lk.SubClass(editor.Control)
 _control.lk.Pad = lib
 
 local const = _control.lk.Slider.const

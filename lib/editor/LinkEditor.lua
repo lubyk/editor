@@ -7,7 +7,7 @@
   and nodes.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.LinkEditor = lib
 
 -- Box pen width

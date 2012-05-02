@@ -8,8 +8,13 @@
 set(MODULE_NAME editor)
 
 # --------------------------------------------------------------
+#  editor app
+# --------------------------------------------------------------
+add_subdirectory(install)
+
+# --------------------------------------------------------------
 #  install                                     
 # --------------------------------------------------------------
-install(DIRECTORY lubyk
-  DESTINATION lib
-)                                  
+install(DIRECTORY lib
+  DESTINATION ${LUBYK_LIB}
+)

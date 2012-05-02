@@ -7,7 +7,7 @@
   (LibraryView, HelpView, PatchView and ControlView).
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'MainWindow')
+local lib = lk.SubClass(mimas.MainWindow)
 editor.ZoneView = lib
 local private = {dialog = {}}
 
@@ -214,8 +214,8 @@ function private.dialog:newProject()
   if base then
     -- Go from lkp file to directory containing project
     -- folder.
-    base = lk.directory(base)
-    base = lk.directory(base)
+    base = lk.pathDir(base)
+    base = lk.pathDir(base)
   else
     base = os.getenv('HOME')
   end

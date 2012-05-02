@@ -6,7 +6,7 @@
   The SlotView show a single slot (inlet or outlet).
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.SlotView = lib
 
 -- constants

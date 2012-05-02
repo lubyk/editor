@@ -18,7 +18,7 @@ local defaults = {
     Controls = true,
   },
   -- Where the databases (prototypes, controls) lives
-  db_path = Lubyk.lib .. '/Lubyk.db',
+  db_path = os.getenv('HOME') .. '/.lubyk/Lubyk.db',
   -- Paths relative to Lubyk.lib (should not be changed by user)
   prototype_base_src = {
     '_prototype',

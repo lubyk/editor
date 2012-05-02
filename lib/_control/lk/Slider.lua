@@ -6,7 +6,7 @@
   Async slider.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(editor, 'Control')
+local lib = lk.SubClass(editor.Control)
 _control.lk.Slider = lib
 
 -- default slider size
@@ -44,8 +44,8 @@ function lib:control(x, y)
   self:update()
 end
 
-local noBrush = mimas.EmptyBrush
-local noPen   = mimas.EmptyPen
+local noBrush = mimas.NoBrush
+local noPen   = mimas.NoPen
 
 function lib:paintControl(p, w, h)
   local cs = self.conn_s

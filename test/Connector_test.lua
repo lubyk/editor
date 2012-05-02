@@ -26,6 +26,8 @@ function should.callbackCtrlOnChanged()
     res = {...}
   end
   local conn = editor.Connector(ctrl, 'x')
+  conn.url = '/foobar'
+  conn:set({url=conn.url}, {})
   -- ! No 'self' here.
   conn.changed(4.55)
   assertValueEqual({
@@ -34,25 +36,49 @@ function should.callbackCtrlOnChanged()
   }, res)
 end
 
-function should.connect()
-  local ctrl = {}
-  local process = {}
+local function mockCtrl()
+  return editor.Control()
+end
+
+local function mockZone()
+  local self = {}
+  function self.findProcess()
+    return self
+  end
+  self.findNode = self.findProcess
+  function self.connectConnector()
+  end
+  return self
+end
+
+function should.connectOnSet(t)
+  local ctrl = mockCtrl()
+  local zone = mockZone()
+  function zone:connectConnector()
+    t.connected = true
+  end
   local url = '/foo/a/b/_/foo'
   local conn = editor.Connector(ctrl, 'x')
-  conn:connect(process, url)
+  conn:set({url=url}, zone)
+  assertTrue(t.connected)
 end
 
 function should.pushchange()
-  local ctrl = {}
-  local process = {online = true}
-  process.push = process
+  local ctrl = mockCtrl()
+  local zone = mockZone()
+  function zone:connectConnector()
+  end
+  -- When mocking the process
+  zone.online = true
+  -- process.push
+  zone.push = zone
   local res
-  function process:send(url, val)
+  function zone:send(url, val)
     res = val
   end
   local url = '/foo/a/b/_/foo'
   local conn = editor.Connector(ctrl, 'x')
-  conn:connect(process, url)
+  conn:set({url=url}, zone)
   conn.change(12.33)
   assertValueEqual({
     nodes = {

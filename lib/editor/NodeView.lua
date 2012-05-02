@@ -6,7 +6,7 @@
   The NodeView show a single node with inlets and outlets.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.NodeView = lib
 local private = {}
 
@@ -130,13 +130,13 @@ function lib:animate(typ, max_wait, timeout_clbk)
     self.anim:kill()
   end
   self.anim = lk.Thread(function()
-    local start_time = worker:now()
+    local start_time = elapsed()
     local t = 0
     local i = 0
     while t <= max_wait do
       i = i + 1
       sleep(50)
-      t = worker:now() - start_time
+      t = elapsed() - start_time
       -- blink 
       local sat = (0.75 + 0.2 * math.cos(t * math.pi / 750)) % 1.0
       self.anim_back = mimas.Color(hue, bsat or sat, sat, 0.5)

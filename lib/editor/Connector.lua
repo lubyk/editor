@@ -14,21 +14,25 @@ local private    = {}
 
 --=============================================== PUBLIC
 setmetatable(lib, {
-  __call = function(lib, ctrl, name, info)
-    local self = {
-      ctrl  = ctrl,
-      name  = name,
-      info  = info,
-      -- Scaled remote value.
-      remote_value = 0,
-      -- Unscaled remote value.
-      raw_remote_value = 0,
-      -- Value set by GUI (0-1 scale).
-      value = 0,
-    }
-    return setmetatable(self, lib)
-  end,
+  __call = function(lib, ...)
+    return lib.new(...)
+  end
 })
+
+function lib.new(ctrl, name, info)
+  local self = {
+    ctrl  = ctrl,
+    name  = name,
+    info  = info,
+    -- Scaled remote value.
+    remote_value = 0,
+    -- Unscaled remote value.
+    raw_remote_value = 0,
+    -- Value set by GUI (0-1 scale).
+    value = 0,
+  }
+  return setmetatable(self, lib)
+end
 
 local UPDATE_URL = lubyk.update_url
 
@@ -75,7 +79,7 @@ function lib:set(def, zone)
     --=============================================== Raw value
     -- not a number value
     function self.change(value)
-      local now = worker:now()
+      local now = elapsed()
       self.value = value
       if process.online then
         setter[param_name] = value
@@ -220,7 +224,7 @@ end
 
 --[[
 --EXPERIMENTAL CONTROL BUFFER OVERFLOW PROTECTION.
-  local last_not   = worker:now()
+  local last_not   = elapsed()
   local last_send  = 0
   local WAIT_RETRY = 100 -- ms
   local to_send
@@ -229,7 +233,7 @@ end
     --=============================================== Raw value
     -- not a number value
     function self.change(value)
-      local now = worker:now()
+      local now = elapsed()
       self.value = value
       if process.online then
         if last_send < last_not or
@@ -244,7 +248,7 @@ end
     end
     -- ! No 'self' here.
     function self.changed(value)
-      last_not = worker:now()
+      last_not = elapsed()
       self.remote_value = value
       self.raw_remote_value = value
       changed(ctrl, name, value)
@@ -259,7 +263,7 @@ end
   elseif self.min == 0 and self.max == 1 then
     --=============================================== Number, no scaling
     function self.change(value)
-      local now = worker:now()
+      local now = elapsed()
       if value < min then
         value = min
       elseif value > max then
@@ -279,7 +283,7 @@ end
     end
     -- ! No 'self' here.
     function self.changed(value)
-      last_not = worker:now()
+      last_not = elapsed()
       self.raw_remote_value = value
       self.remote_value = value
       changed(ctrl, name, value)
@@ -294,7 +298,7 @@ end
   else
     --=============================================== Number, with scaling
     function self.change(value)
-      local now = worker:now()
+      local now = elapsed()
       if value < 0 then
         value = 0
       elseif value > 1 then
@@ -314,7 +318,7 @@ end
     end
     -- ! No 'self' here.
     function self.changed(value)
-      last_not = worker:now()
+      last_not = elapsed()
       -- value before scaling
       self.raw_remote_value = value
       value = (value - min) / range

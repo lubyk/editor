@@ -7,7 +7,7 @@
   messages and errors from remote processes and nodes.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget', mimas.ToolFlag)
+local lib = lk.SubClass(mimas.Widget, mimas.ToolFlag)
 editor.LogView = lib
 lib.MaxLogSize = 50
 local private = {}

@@ -6,7 +6,7 @@
   Displays a control slot during connection edit.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.CtrlSlotView = lib
 lib.stype = 'ctrl'
 local private = {}

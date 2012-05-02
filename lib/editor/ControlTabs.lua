@@ -6,7 +6,7 @@
   Displays all the views in a tabbed interface.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'TabWidget')
+local lib = lk.SubClass(mimas.TabWidget)
 editor.ControlTabs = lib
 
 local private = {}

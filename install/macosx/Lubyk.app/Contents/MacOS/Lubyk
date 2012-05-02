@@ -23,4 +23,4 @@ fi
 
 app="$r/app.lua"
 
-exec "$lubyk" "$app" "$f/../../../lib" "$INSTALL" "$1"
+exec "$lubyk" "$app" "$r/lib" "$INSTALL" "$1"

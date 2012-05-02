@@ -15,14 +15,20 @@ editor.Library = lib
 local private  = {}
 
 setmetatable(lib, {
-  --- Create a new editor.Link reflecting the content of a remote
-  -- link. If the process view is not shown, the LinkView is not
-  -- created.
-  -- 'table_name' can be 'prototypes' or 'controls'
- __call = function(lib, opts)
-   opts = opts or {table_name = 'prototype'}
+  __call = function(lib, ...)
+    return lib.new(...)
+  end
+})
+
+--- Create a new editor.Link reflecting the content of a remote
+-- link. If the process view is not shown, the LinkView is not
+-- created.
+-- 'table_name' can be 'prototypes' or 'controls'
+function lib.new(opts)
+  assert(opts.table_name, 'Missing table_name')
+  opts = opts or {table_name = 'prototype'}
   local self = {
-    -- Dir patterns to glob for files.
+    -- List of directories to search for files.
     sources = {},
     -- This is the name of the table containing the objects in the
     -- database. It is also used to get the sources from editor
@@ -34,22 +40,23 @@ setmetatable(lib, {
     self.db = opts.db
   else
     self.filepath = editor.Settings.db_path
-    lk.makePath(lk.directory(self.filepath))
+    lk.makePath(lk.pathDir(self.filepath))
     if lk.exist(self.filepath) then
       self.db = sqlite3.open(self.filepath)
     else
       self.db = sqlite3.open(self.filepath)
     end
   end
-  private.prepareDb(self)
-  private.setupSources(self)
-
   setmetatable(self, lib)
-  return self
-end})
 
-function lib:addSource(lib_name, path)
-  self.sources[lib_name] = path
+  private.prepareDb(self)
+  private.setupSources(self, opts.sources)
+  return self
+end
+
+function lib:addSource(path)
+  local dir = lk.Dir(path)
+  table.insert(self.sources, dir)
 end
 
 -- Recreate database from content in filesystem.
@@ -59,7 +66,7 @@ function lib:sync()
   for _, dir in ipairs(self.sources) do
     for folder in dir:list() do
       if lk.fileType(folder) == 'directory' then
-        local _, lib_name = lk.directory(folder)
+        local _, lib_name = lk.pathDir(folder)
         local dir = lk.Dir(folder)
         for file in dir:glob('[.]lua$') do
           private.addNode(self, lib_name, file)
@@ -122,28 +129,26 @@ local function gsub(str, pat, rep)
 end
 private.gsub = gsub
 
-function private:setupSources()
-  -- prototypes_base_src, controls_base_src
+function private:setupSources(user_list)
+  -- prototypes_base_src, controls_base_src (path relative to Lubyk.lib)
   local list = editor.Settings[self.table_name .. '_base_src']
   if list then
     -- Use the real list in case we have a copy-on-write (empty) placeholder
     -- list.
     list = list._placeholder or list
     for _, path in ipairs(list) do
-      local dir = lk.Dir(Lubyk.lib .. '/' .. path)
-      table.insert(self.sources, dir)
+      self:addSource(Lubyk.lib .. '/' .. path)
     end
   end
 
-  -- prototypes_src, controls_src
-  list = editor.Settings[self.table_name .. '_src']
+  -- prototypes_src, controls_src (extra paths provided by user)
+  list = user_list or editor.Settings[self.table_name .. '_src']
   if list then
     -- Use the real list in case we have a copy-on-write (empty) placeholder
     -- list.
     list = list._placeholder or list
     for _, path in ipairs(list) do
-      local dir = lk.Dir(path)
-      table.insert(self.sources, dir)
+      self:addSource(path)
     end
   end
 end
@@ -186,16 +191,19 @@ function private:addNode(lib_name, filepath)
   local name = lib_name .. '.' .. string.match(filepath, '([^%./]+)%.lua$')
   local stmt = self.add_node_stmt
   local code
+  local keywords
   if not self.ignore_code then
     code = lk.readall(filepath)
+    keywords = string.match(code, '@keywords ([^\n]+)')
+    if keywords then
+      keywords = keywords:gsub(',',' '):gsub(' +',' ') .. ' ' .. name
+    end
   end
-  -- TODO: extract information from first comment such as
-  -- 'keywords', 'hue', 'author', 'help', etc.
   stmt:bind_names {
     name = name,
     path = filepath,
     code = code,
-    keywords = lib_name ..'.'.. name,
+    keywords = keywords or name,
   }
   stmt:step()
   stmt:reset()

@@ -6,7 +6,7 @@
   Displays the list of ProcessTabs.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.MachineView = lib
 
 -- constants

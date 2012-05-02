@@ -15,9 +15,13 @@ function should.loadCode()
 end
 
 local function makeLib()
-  local lib = editor.Library(sqlite3.open_memory())
-  lib.sources = {
-    lubyk = fixture.path('nodes')
+  local op
+  local lib = editor.Library {
+    db = sqlite3.open_memory(),
+    table_name = 'nodes',
+    sources = {
+      fixture.path('_prototypes'),
+    },
   }
   lib:sync()
   return lib
@@ -25,48 +29,41 @@ end
 
 function should.populateDatabase()
   local lib = makeLib()
-  assertEqual(2, lib:nodeCount())
+  assertEqual(3, lib:nodeCount())
 end
 
 function should.findNodeByPosition()
   local lib = makeLib()
+  local node = lib:node(1)
+  assertMatch('Does nothing', node.code)
+  node.code = nil
   assertValueEqual({
-    name = 'lubyk.Bar',
-    keywords = 'lubyk.Bar',
-  }, lib:node(1))
-  assertValueEqual({
-    name = 'lubyk.Foo'
-  }, lib:node(2))
+    path = 'test/fixtures/_prototypes/foo/Bar.lua',
+    name = 'foo.Bar',
+    keywords = 'machine blah xy foo.Bar',
+  }, node)
+  assertValueEqual('foo.Baz', lib:node(2).name)
 end
 
 function should.findWithFilter()
   local lib = makeLib()
-  assertValueEqual({
-    name = 'lubyk.Foo',
-    keywords = 'lubyk.Foo',
-  }, lib:node('oo'))
+  assertValueEqual('foo.Baz', lib:node('salad').name)
 end
 
 function should.findCodeByName()
   local lib = makeLib()
-  assertMatch('This is Foo.lua', lib:code('lubyk.Foo'))
+  assertMatch('Does a great fruit salad.', lib:code('foo.Baz'))
 end
 
 function should.notAddPercentInFilter()
   local lib = makeLib()
-  assertNil(lib:node('Foo%'))
+  assertNil(lib:node('Bar%'))
 end
 
 function should.paginateWithFilter()
   local lib = makeLib()
-  assertValueEqual({
-    name = 'lubyk.Bar',
-    keywords = 'lubyk.Bar',
-  }, lib:node('lubyk'))
-  assertValueEqual({
-    name = 'lubyk.Foo',
-    keywords = 'lubyk.Foo',
-  }, lib:node('lubyk', 2))
+  assertValueEqual('foo.Bar', lib:node('foo').name)
+  assertValueEqual('foo.Baz', lib:node('foo', 2).name)
 end
 
 function should.returnNilOnNotFound()

@@ -6,7 +6,7 @@
   On/Off switch.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(editor, 'Control')
+local lib = lk.SubClass(editor.Control)
 _control.lk.Switch = lib
 
 local DEFAULT = {

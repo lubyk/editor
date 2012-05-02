@@ -6,7 +6,7 @@
   Displays a control view with all the populated controls.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.ControlView = lib
 
 local private = {}

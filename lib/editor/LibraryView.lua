@@ -6,7 +6,7 @@
   Displays the LibraryView.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.LibraryView = lib
 local private = {}
 

@@ -7,7 +7,7 @@
   displayed and edited.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.ProcessView = lib
 
 local START_DRAG_DIST = 4
@@ -63,13 +63,13 @@ function lib:animate(max_wait, timeout_clbk)
     if self.process then
       tab = self.process.tab
     end
-    local start_time = worker:now()
+    local start_time = elapsed()
     local t = 0
     local i = 0
     while t <= max_wait do
       i = i + 1
       sleep(50)
-      t = worker:now() - start_time
+      t = elapsed() - start_time
       -- blink while waiting for creation
       local sat = (0.75 + 0.2 * math.cos(t * math.pi / 750)) % 1.0
       local lbl_back  = mimas.Brush(self.process.hue, sat, sat, 0.5)

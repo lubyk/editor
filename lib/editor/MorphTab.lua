@@ -10,7 +10,7 @@
   nothing for the moment.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.MorphTab = lib
 lib.type = 'editor.MorphTab'
 -- Sort in MachineView

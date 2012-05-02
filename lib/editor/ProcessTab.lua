@@ -12,7 +12,7 @@
    - alerts
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.ProcessTab = lib
 lib.type = 'editor.ProcessTab'
 -- Sort in MachineView

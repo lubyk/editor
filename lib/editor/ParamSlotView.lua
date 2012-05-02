@@ -6,7 +6,7 @@
   Displays a control slot during connection edit.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget')
+local lib = lk.SubClass(mimas.Widget)
 editor.ParamSlotView = lib
 lib.stype = 'param'
 local private = {}

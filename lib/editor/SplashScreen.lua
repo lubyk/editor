@@ -6,7 +6,7 @@
   This is the splash screen seen when launching the editor.
 
 --]]------------------------------------------------------
-local lib = lk.SubClass(mimas, 'Widget', mimas.SplashScreenFlag)
+local lib = lk.SubClass(mimas.Widget, mimas.SplashScreenFlag)
 editor.SplashScreen = lib
 
 --============================================= PRIVATE
