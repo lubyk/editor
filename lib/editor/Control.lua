@@ -172,7 +172,7 @@ function lib:click(x, y, op, btn, mod)
       self:update()
     end
   else
-    if x > 0 and x < self.w and y > 0 and y < self.h then
+    if self.enabled and x > 0 and x < self.w and y > 0 and y < self.h then
       self:control(x, y, 'click')
     end
     self.show_thumb = false

@@ -24,23 +24,52 @@ function should.createConnectors()
 end
 
 function should.findConnector()
-  local s = Slider('foo')
-  local x = s:connector('x')
-  assertEqual('editor.Connector', x.type)
+  local slider = Slider('foo')
+  local s = slider:connector('s')
+  assertEqual('editor.Connector', s.type)
+end
+
+local function mockCtrl()
+  return editor.Control()
+end
+
+local function mockZone()
+  local self = {online = true}
+  function self.findProcess()
+    return self
+  end
+  self.findNode = self.findProcess
+  self.push = self
+  function self.connectConnector()
+  end
+  return self
 end
 
 function withUser.should.showSlider(t)
+  local zone = mockZone()
   local s = Slider('foo')
-  s.s = 0.8
-  s.remote_s = 0.5
+  local url = '/a/metro/_/tempo'
+  -- This is how we enable the control.
+  s.conn_s:set({
+    url = url,
+    min = 0,
+    max = 100,
+  }, zone)
+
+  -- mock network notification
+  function zone:send(url, changes)
+    local v = changes.nodes.metro._.tempo
+    s.conn_s.changed(v)
+    if v == 0 then
+      t.continue = true
+    end
+  end
   s:show()
   t:timeout(function()
-    return s.s == 0
+    return t.continue
   end)
-  assertEqual(0, s.s)
+  assertEqual(0, s.conn_s.value)
 end
-
-
 
 test.all()
 
