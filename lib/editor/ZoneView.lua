@@ -16,7 +16,7 @@ local PADDING = 2
 local settings = editor.Settings
 
 function lib:init(zone)
-  -- The layout holder is just there so that the main_view does not have
+  -- The layout holder is just there so that the zone_view does not have
   -- a "master" layout and can therefore hold dragged views and such without
   -- making a mess with widget sizes.
   self:setWindowTitle(zone.name)
@@ -49,13 +49,13 @@ function lib:init(zone)
   self.ctrl_library_view = editor.LibraryView(zone.ctrl_library, zone)
   self.layout:addWidget(self.ctrl_library_view)
 
-  self.w = settings.main_view.w
-  self.h = settings.main_view.h
+  self.w = settings.zone_view.w
+  self.h = settings.zone_view.h
   self:resize(self.w, self.h)
 
   self.default_menu = private.setupMenus(self)
 
-  self:move(settings.main_view.x, settings.main_view.y)
+  self:move(settings.zone_view.x, settings.zone_view.y)
 
   -- Display open recent / create new dialog until something appears on the
   -- network.
@@ -63,7 +63,7 @@ function lib:init(zone)
 end
 
 function lib:moved(x, y)
-  local v = settings.main_view
+  local v = settings.zone_view
   if y == v.y + 22 and x == v.x then
     -- FIXME: HACK. we receive a notification with +22 on mac on create only.
     -- move(0,0) --> moved(0, 22)
@@ -76,7 +76,7 @@ function lib:moved(x, y)
 end
 
 function lib:resized(w, h)
-  local v = settings.main_view
+  local v = settings.zone_view
   v.w = w
   v.h = h
   settings:save(true)

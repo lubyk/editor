@@ -209,7 +209,7 @@ function lib.makeGhost(node_def, zone)
     zone       = zone,
   }
   editor.Node.setHue(node, node_def.hue or 0.2)
-  local ghost = editor.NodeView(node, zone.main_view)
+  local ghost = editor.NodeView(node, zone.view)
   ghost.is_ghost = true
   ghost:updateView()
 
@@ -217,7 +217,7 @@ function lib.makeGhost(node_def, zone)
   -- or when it appears after double-click
   function ghost:openEditor(finish_func)
     -- add a LineEdit on top of self
-    local edit = editor.NodeLineEdit(zone.main_view, node.name, zone.library)
+    local edit = editor.NodeLineEdit(zone.view, node.name, zone.library)
     self.edit = edit
     edit:selectAll()
     zone.view:addWidget(edit)

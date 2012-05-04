@@ -199,7 +199,7 @@ function private:makeList()
       if self.zone then
         self.zone:editNode(url, line)
       end
-      private.showUnlock(self)
+      private.lockData(self)
       private.select(self, self.view_data[i])
       list:reset()
     end
@@ -210,13 +210,13 @@ function private:makeList()
     -- When the user changes the vertical slider, we
     -- stop changing log data.
     if dir == Vertical then
-      private.showUnlock(self)
+      private.lockData(self)
     end
   end
 
 end
 
-function private:showUnlock()
+function private:lockData()
   if not self.locked then
     self.locked = true
     self.unlock_btn:show()

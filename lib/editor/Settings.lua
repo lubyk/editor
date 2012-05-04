@@ -32,8 +32,8 @@ local defaults = {
   -- Number of files to keep in open recent list
   open_recent_max = 4,
 
-  -- Default size and position for main window
-  main_view = {
+  -- Default size and position for main window (ZoneView)
+  zone_view = {
     x = 50,
     y = 50,
     w = 787,

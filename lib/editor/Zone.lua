@@ -17,6 +17,11 @@ local private= {}
 setmetatable(lib, {
   -- new method
  __call = function(lib, process_watch, name)
+   return lib.new(process_watch, name)
+ end
+})
+
+function lib.new(process_watch, name)
   local self = {
     name                    = name,
     selected_node_views     = {},
@@ -45,7 +50,7 @@ setmetatable(lib, {
     self:pathChanged(path)
   end
   return self
-end})
+end
 
 function lib:selectNodeView(node_view, add_to_selection)
   if not add_to_selection then
@@ -380,8 +385,6 @@ end
 function private.setupView(self)
   local view = editor.ZoneView(self)
   self.view = view
-  -- FIXME: remove references to 'main_view' (GREP in modules/editor).
-  self.main_view = view
   function view:closed()
     -- when window is closed, we remove this zone
     app:removeZone(self.name)

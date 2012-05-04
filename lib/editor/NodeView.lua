@@ -195,7 +195,7 @@ local RightButton = mimas.RightButton
 local function makeGhost(self)
   local node = self.node
   -- create a ghost
-  local ghost = editor.NodeView(node, self.zone.main_view)
+  local ghost = editor.NodeView(node, self.zone.view)
   ghost.is_ghost = true
   node.ghost = ghost
   node.dragging = true

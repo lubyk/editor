@@ -15,7 +15,7 @@ function should.drawMainView(t)
   t.editor   = editor.Zone()
   t.watch    = lk.ProcessWatch():addDelegate(t.editor)
   t.editor:setView(editor.ZoneView(t.editor))
-  t.editor.main_view:show()
+  t.editor.view:show()
   sleep(2000)
 end
 

@@ -56,7 +56,7 @@ function lib:updateView()
       self.ghost = editor.LinkView(self.source.ghost, self.target.view)
     end
     if self.ghost then
-      self.source.node.process.zone.main_view:addLinkView(self.ghost)
+      self.source.node.process.zone.view:addLinkView(self.ghost)
     end
   elseif not self.source.ghost and not self.target.ghost then
     -- remove our ghost link
