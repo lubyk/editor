@@ -18,13 +18,13 @@ local app          = app
 local private      = {}
 
 -- We transform mimas.Application into an editor.Application.
-function lib.new(args)
+function lib.new()
   local self = app
   setmetatable(self, lib)
   self.start = lk.Thread(function()
     self:init()
   end)
-  for k,arg in pairs(args) do
+  for _, v in pairs(arg) do
     if arg == '--install' then
       self.need_install = true
     end
