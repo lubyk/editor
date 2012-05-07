@@ -193,7 +193,7 @@ function private:addNode(lib_name, filepath)
   local code
   local keywords
   if not self.ignore_code then
-    code = lk.readall(filepath)
+    code = lk.readAll(filepath)
     keywords = string.match(code, '@keywords ([^\n]+)')
     if keywords then
       keywords = keywords:gsub(',',' '):gsub(' +',' ') .. ' ' .. name

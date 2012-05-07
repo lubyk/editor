@@ -117,7 +117,7 @@ end
 
 function lib:startZone(opts)
   -- Spawn Morph server
-  worker:spawn([[
+  lk.spawn([[
   require 'lubyk'
   morph = lk.DavMorph(%s)
   run()

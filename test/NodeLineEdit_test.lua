@@ -21,7 +21,8 @@ function should.callback(t)
   t.db = editor.Library(sqlite3.open_memory())
   t.db:sync()
 
-  t.lb = editor.NodeLineEdit(t.win, "type 'm=l'", t.db)
+  t.lb = editor.NodeLineEdit("type 'm=l'", t.db)
+  t.win:addWidget(t.lb)
   t.lb:selectAll()
 
   t.win:addWidget(t.lb)

@@ -131,11 +131,11 @@ function lib:editFile(filepath, line)
     else
       cmd = string.format("%s '%s'", editor_cmd, filepath)
     end
-    worker:execute(cmd)
+    io.popen(cmd)
   else
     -- FIXME
     -- use internal editor ?
-    worker:execute(string.format("open '%s'", filepath))
+    io.popen(string.format("open '%s'", filepath))
   end
 end
 
@@ -353,7 +353,7 @@ function lib:processDisconnected(remote_process)
 end
 
 function lib:startStemCell()
-  worker:spawn([[
+  lk.spawn([[
   require 'lubyk'
   stem = lk.StemCell()
   run()

@@ -394,9 +394,8 @@ function lib:editDialog(conn, gx, gy)
       {'btn', 'OK', default = true},
     },
   }
-
-  self:addWidget(dlg)
   dlg:globalMove(gx - 5, gy - 5)
+  dlg:show()
   self.dlg = dlg
   
   function dlg.btn(dlg, btn_name)
@@ -426,12 +425,12 @@ end
 
 --=============================================== Widget callbacks
 
-local noBrush = mimas.EmptyBrush
+local NoBrush = mimas.NoBrush
 
 -- Draw links ?
 function lib:paint(p, w, h)
   p:fillRect(0, 0, w, h, self.back_color)
-  p:setBrush(noBrush)
+  p:setBrush(NoBrush)
   for _, path in pairs(self.paths) do
     p:setPen(path[1])
     p:drawPath(path[2])

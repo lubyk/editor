@@ -211,6 +211,7 @@ end
 
 function private.dialog:newProject()
   local base = (settings.open_recent or {})[1]
+  local had_splash = self.dlg and self.dlg.is_splash
   if base then
     -- Go from lkp file to directory containing project
     -- folder.
@@ -221,9 +222,9 @@ function private.dialog:newProject()
   end
   self:hideDialog()
   self.dlg = mimas.SimpleDialog {
-    flag   = mimas.WidgetFlag,
+    background = false,
     parent = self,
-    'Create a new lubyk project.',
+    'Create a new lubyk project.               ',
     { 
       'vbox', box = true,
       'Project name',
@@ -246,10 +247,21 @@ function private.dialog:newProject()
       if not lk.exist(path) then
         lk.writeall(path, '')
       end
+      self:msgDlg {
+        background = false,
+        'Creating...',
+        {
+          'vbox', box=true,
+          path,
+        },
+      }
       app:openFile(path)
+    elseif had_splash then
+      self:showSplash()
+    else
+      self:hideDialog()
     end
   end
-  self.dlg:resize(400,200)
   self.dlg:show()
 end
 
@@ -268,6 +280,7 @@ end
 function private.dialog:addView()
   self:hideDialog()
   local dlg = mimas.SimpleDialog {
+    background = false,
     'Create a new view',
     {'vbox', box=true, style='background: #222',
       'view name',
@@ -313,6 +326,7 @@ function lib:showSplash()
   end
   self:hideDialog()
   local dlg = mimas.SimpleDialog {
+    background = false,
     flag = mimas.WidgetFlag,
     {'label', "<img src='"..settings.logo.."'/>", align=mimas.AlignCenter},
     {
@@ -328,24 +342,21 @@ function lib:showSplash()
       },
     },
   }
+  dlg.is_splash = true
   self.dlg = dlg
   self:addWidget(dlg)
 
   local function openFile(path)
     if path then
-      app:openFile(path)
-      self:hideDialog()
-      dlg = mimas.SimpleDialog {
+      self:msgDlg {
+        background = false,
         'Loading...',
         {
           'vbox', box=true,
           path,
         },
       }
-      self:addWidget(dlg)
-      self.dlg = dlg
-      dlg:show()
-      private.centerDlg(self)
+      app:openFile(path)
     end
   end
 
@@ -375,6 +386,14 @@ function lib:showSplash()
   private.centerDlg(self)
 end
 
+function lib:msgDlg(def)
+  self:hideDialog()
+  local dlg = mimas.SimpleDialog(def)
+  self:addWidget(dlg)
+  self.dlg = dlg
+  dlg:show()
+  private.centerDlg(self)
+end
 
 function private:centerDlg()
   local dlg = self.dlg

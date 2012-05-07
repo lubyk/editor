@@ -217,7 +217,8 @@ function lib.makeGhost(node_def, zone)
   -- or when it appears after double-click
   function ghost:openEditor(finish_func)
     -- add a LineEdit on top of self
-    local edit = editor.NodeLineEdit(zone.view, node.name, zone.library)
+    local edit = editor.NodeLineEdit(node.name, zone.library)
+	zone.view:addWidget(edit)
     self.edit = edit
     edit:selectAll()
     zone.view:addWidget(edit)

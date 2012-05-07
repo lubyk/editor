@@ -120,7 +120,7 @@ function private:mountDav()
   self.dav_url = string.format('http://%s:%i', self.ip, self.davport)
   -- option -S == do not prompt when server goes offline
   local cmd = string.format('mount_webdav -S %s %s', self.dav_url, work_path)
-  self.mount_fd = worker:execute(cmd)
+  self.mount_fd = io.popen(cmd)
 end
 
 function private:unmountDav()
@@ -129,7 +129,7 @@ function private:unmountDav()
     -- Automatic disconnection. If we do not do this, we have lots
     -- of dangling server problems.
     self.mount_fd = nil
-    worker:execute(string.format('umount %s', work_path))
+    io.popen(string.format('umount %s', work_path))
   end
 end
 

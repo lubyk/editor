@@ -9,8 +9,8 @@
 --]]------------------------------------------------------
 
 -- new method
-function editor.NodeLineEdit(parent, initial_name, db)
-  local self = mimas.LineEditAuto(parent, initial_name, '^(.+)=( *)(.*)')
+function editor.NodeLineEdit(initial_name, db)
+  local self = mimas.LineEditAuto(initial_name, '^(.+)=( *)(.*)')
   self.db = db
 
   function self:getCue(text)
