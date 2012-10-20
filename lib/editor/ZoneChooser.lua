@@ -148,7 +148,7 @@ function lib:paint(p, w, h)
   local bg = mimas.Color()
   bg:setRgba(38/256,38/256,38/256)
 
-  local pen = mimas.EmptyPen
+  local pen = mimas.NoPen
   p:setBrush(bg)
   p:setPen(pen)
   p:drawRoundedRect(bp, bp, w - 2*bp, h - 2*bp, arc_radius)

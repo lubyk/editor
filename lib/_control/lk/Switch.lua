@@ -34,8 +34,8 @@ function lib:control(x, y, typ)
   end
 end
 
-local noBrush = mimas.EmptyBrush
-local noPen   = mimas.EmptyPen
+local noBrush = mimas.NoBrush
+local noPen   = mimas.NoPen
 
 function lib:paintControl(p, w, h)
   local cs = self.conn_s

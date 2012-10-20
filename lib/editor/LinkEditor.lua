@@ -378,8 +378,9 @@ function lib:editDialog(conn, gx, gy)
   local node = conn.node
 
   local dlg = mimas.SimpleDialog {
-    parent = self,
-    flag   = mimas.WidgetFlag,
+    parent     = self,
+    flag       = mimas.WidgetFlag,
+    background = 'rounded',
     'Edit link',
     {
       'vbox', box = true,

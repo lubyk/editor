@@ -35,6 +35,10 @@ local last = 'three'
 function lib:addMessage(url, typ, msg)
   -- If we scroll to row x: keep this row in view.
   msg = string.gsub(msg, '^%s*(.-)%s*$', '%1')
+  -- If we have an error, remove [string "/some/url"]: part.
+  if typ == 'error' then
+    msg = string.gsub(msg, '^%[string "'..url..'"]:','')
+  end
   local data = self.data
   local entry = {
     url = url,
@@ -195,7 +199,7 @@ function private:makeList()
     local log = self.view_data[i]
     if log then
       local url = log.url
-      local line = string.match(log.msg, ':([0-9]+):')
+      local line = string.match(log.msg, '^([0-9]+):')
       if self.zone then
         self.zone:editNode(url, line)
       end

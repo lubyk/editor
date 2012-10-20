@@ -118,6 +118,7 @@ local editor_cmd = editor.Settings.editor_cmd
 local editor_open_at = editor.Settings.editor_open_at
 
 function lib:editFile(filepath, line)
+  -- TODO: properly escape 'url' so that any path works.
   if editor_cmd then
     local cmd
     if line and editor_open_at then
@@ -135,7 +136,7 @@ function lib:editFile(filepath, line)
   else
     -- FIXME
     -- use internal editor ?
-    io.popen(string.format("open '%s'", filepath))
+    io.popen(string.format('open "%s"', filepath))
   end
 end
 

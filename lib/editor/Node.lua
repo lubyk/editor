@@ -255,14 +255,33 @@ function lib.makeGhost(node_def, zone)
   return ghost
 end
 
+-- We received new parameter values from remote, update the controls.
 function private:setParams(def)
   local params = self.params
   for k, v in pairs(def) do
-    params[k] = v
-    local list = self.controls[k]
-    if list then
-      for _, conn in ipairs(list) do
-        conn.changed(v)
+    if type(v) == 'table' then
+      local param = params[k]
+      if not param or type(param) ~= 'table' then
+        param = {}
+        params[k] = param
+      end
+      print("CHANGED", k, yaml.dump(v))
+      for sk, sv in pairs(v) do
+        param[sk] = sv
+        local list = self.controls[k..'.'..sk]
+        if list then
+          for _, conn in ipairs(list) do
+            conn.changed(sv)
+          end
+        end
+      end
+    else
+      params[k] = v
+      local list = self.controls[k]
+      if list then
+        for _, conn in ipairs(list) do
+          conn.changed(v)
+        end
       end
     end
   end

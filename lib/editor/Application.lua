@@ -25,12 +25,19 @@ function lib.new()
     self:init()
   end)
   for _, v in pairs(arg) do
-    if arg == '--install' then
+    if v == '--install' then
       self.need_install = true
     end
   end
   return self
 end
+
+-- Platform specific app path (used to check installation on first run).
+local app_base_path = {
+  macosx = '/Applications',
+  -- FIXME
+  linux  = '/usr/local/',
+}
 
 function lib:init()
   -- editing windows' models
@@ -41,31 +48,46 @@ function lib:init()
   self.host_list = {'localhost'}
 
   if self.need_install then
-    local dlg = mimas.SimpleDialog {
-      'Installation needed',
-      {
-        'hbox',
-        {},
-        {'btn', 'Quit'},
-        {'btn', 'Install', default=true},
-      },
-    }
-    self.dlg = dlg
-
-    function dlg:btn(btn)
-      if btn == 'Quit' then
-        dlg:close()
-      else
-        -- Install
-        if Lubyk.plat == 'macosx' then
-          os.execute('open "/Applications/Lubyk/lib/lubyk/Install Lubyk.app"')
-          dlg:close()
+    local app_lua_path = arg[0]
+    if not app_lua_path:match('^'..app_base_path[Lubyk.plat]) then
+      self.dlg = mimas.SimpleDialog {
+        'Lubyk ' .. Lubyk.version_str .. ' starting.',
+        '<h2>Please install Lubyk in "' .. app_base_path[Lubyk.plat] .. '"</h2>',
+        {
+          'hbox',
+          {},
+          {'btn', 'Quit', default=true},
+        },
+      }
+      function self.dlg:btn(btn)
+        self:close()
+      end
+    else
+      self.dlg = mimas.SimpleDialog {
+        'Lubyk ' .. Lubyk.version_str .. ' starting.',
+        '<h2>Bootstrap file installation needed.</h2>',
+        {
+          'hbox',
+          {},
+          {'btn', 'Quit'},
+          {'btn', 'Install', default=true},
+        },
+      }
+      function self.dlg:btn(btn)
+        if btn == 'Quit' then
+          self:close()
+        else
+          -- Install
+          if Lubyk.plat == 'macosx' then
+            os.execute('open "' .. Lubyk.lib .. '/InstallLubyk.app"')
+            self:close()
+          end
         end
       end
     end
 
-    dlg:resize(dlg:minimumSize())
-    dlg:show()
+    self.dlg:resize(self.dlg:minimumSize())
+    self.dlg:show()
   else
     self:selectZone(Lubyk.zone)
   end
@@ -163,5 +185,4 @@ function lib:openFile(path)
     }
   end
 end
-
 

@@ -44,7 +44,7 @@ function lib:paint(p, w, h)
   local arc_radius = 15
   local bg = mimas.Color(0.6, 0.5, 0.5)
 
-  local pen = mimas.EmptyPen
+  local pen = mimas.NoPen
   p:setBrush(bg)
   p:setPen(pen)
   p:drawRoundedRect(bp, bp, w - 2*bp, h - 2*bp, arc_radius)

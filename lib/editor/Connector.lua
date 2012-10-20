@@ -143,6 +143,9 @@ function lib:set(def, zone)
   if connecting then
     -- We do this last, when change/changed callbacks are set.
     self.node:connectConnector(self)
+  elseif self.raw_remote_value then
+    -- Force display update in case we changed range.
+    self.changed(self.raw_remote_value)
   end
 end
 

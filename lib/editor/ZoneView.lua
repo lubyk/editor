@@ -222,7 +222,6 @@ function private.dialog:newProject()
   end
   self:hideDialog()
   self.dlg = mimas.SimpleDialog {
-    background = false,
     parent = self,
     'Create a new lubyk project.               ',
     { 
@@ -248,7 +247,6 @@ function private.dialog:newProject()
         lk.writeall(path, '')
       end
       self:msgDlg {
-        background = false,
         'Creating...',
         {
           'vbox', box=true,
@@ -280,7 +278,6 @@ end
 function private.dialog:addView()
   self:hideDialog()
   local dlg = mimas.SimpleDialog {
-    background = false,
     'Create a new view',
     {'vbox', box=true, style='background: #222',
       'view name',
@@ -326,7 +323,6 @@ function lib:showSplash()
   end
   self:hideDialog()
   local dlg = mimas.SimpleDialog {
-    background = false,
     flag = mimas.WidgetFlag,
     {'label', "<img src='"..settings.logo.."'/>", align=mimas.AlignCenter},
     {
@@ -349,7 +345,6 @@ function lib:showSplash()
   local function openFile(path)
     if path then
       self:msgDlg {
-        background = false,
         'Loading...',
         {
           'vbox', box=true,

@@ -237,7 +237,7 @@ end
 function private.control:drop()
   local view  = self.zone.view.control_tabs:currentWidget()
   local typ   = self.selected_obj.name
-  local id    = view:nextName(typ)
+  local id    = view:nextName(typ) -- nextName ???
   local ghost = self.ghost
   -- On id update callback
   view:onUpdate(id, function()
