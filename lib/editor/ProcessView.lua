@@ -236,6 +236,7 @@ local function makeGhost(self)
 end
 
 function lib:mouse(x, y)
+  print('MOUSE', x, y)
   local process = self.process
   if self.click_position and not process.dragging and manhattanDist(self.click_position, {x=x,y=y}) > START_DRAG_DIST then
     -- start drag operation: self becomes ghost

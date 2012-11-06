@@ -17,11 +17,12 @@ setmetatable(lib, {
   --- Create a new editor.Link reflecting the content of a remote
   -- link. If the process view is not shown, the LinkView is not
   -- created.
- __call = function(base, source, target, target_url)
+ __call = function(base, source, target, target_url, link_def)
   local self = {
     source  = source,
     target  = target,
     target_url = target_url,
+    link_type = link_def.type,
   }
   -- register in source and target
   table.insert(target.links, self)
@@ -31,10 +32,19 @@ setmetatable(lib, {
   return self
 end})
 
+function lib:set(def)
+  -- changed definition
+  self.link_type = def.type or self.link_type
+  if self.view then
+    -- Rebuild path in case link_type has changed
+    self.view:slotMoved()
+  end
+end
+
 function lib:updateView()
   if not self.view and self.target.view and self.source.view then
     -- Create link view
-    self.view = editor.LinkView(self.source.view, self.target.view)
+    self.view = editor.LinkView(self.source.view, self.target.view, self.link_type)
     if self:isCrossProcess() then
       self.source.node.process.zone.view:addLinkView(self.view)
     else

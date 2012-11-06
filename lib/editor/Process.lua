@@ -125,12 +125,52 @@ end
 -- If self.view is nil, only set the data without
 -- creating/changing views.
 function lib:set(definition)
-  private.set(self, definition)
-  if self.view then
-    self.view:processChanged()
+  local view_changed = false
+  for k, v in pairs(definition) do
+    if k == 'name' then
+      self.name = v
+      if self.view then
+        self.view:setName(v)
+      end
+    elseif k == 'nodes' then
+      setNodes(self, v)
+      view_changed = true
+    elseif k == 'hue' then
+      self[k] = v
+      if self.tab then
+        self.tab:setHue(v)
+      end
+      if self.view then
+        self.view:setHue(v)
+      end
+    elseif k == 'log' then
+      local url = v.url
+      local curr = self
+      local parts = lk.split(url, '/')
+      -- remove ''
+      table.remove(parts, 1)
+      -- remove process
+      table.remove(parts, 1)
+      for _, part in ipairs(parts) do
+        curr = curr:findNode(part)
+        if not curr then
+          break
+        end
+      end
+      if curr and curr.view then
+        curr.view:animate(v.typ, 400)
+      end
+      self.zone:log(v)
+    else
+      self[k] = v
+      view_changed = true
+    end
+  end
+  if view_changed and self.view then
     self:updateView()
   end
 end
+
 
 -- When the ProcessView is created, it triggers this method
 -- to build/update views
@@ -331,44 +371,3 @@ function lib:findNode(node_name)
 end
 
 --=============================================== PRIVATE
-function private.set(self, definition)
-  for k, v in pairs(definition) do
-    if k == 'name' then
-      self.name = v
-      if self.view then
-        self.view:setName(v)
-      end
-    elseif k == 'nodes' then
-      setNodes(self, v)
-    elseif k == 'hue' then
-      self[k] = v
-      if self.tab then
-        self.tab:setHue(v)
-      end
-      if self.view then
-        self.view:setHue(v)
-      end
-    elseif k == 'log' then
-      local url = v.url
-      local curr = self
-      local parts = lk.split(url, '/')
-      -- remove ''
-      table.remove(parts, 1)
-      -- remove process
-      table.remove(parts, 1)
-      for _, part in ipairs(parts) do
-        curr = curr:findNode(part)
-        if not curr then
-          break
-        end
-      end
-      if curr and curr.view then
-        curr.view:animate(v.typ, 400)
-      end
-      self.zone:log(v)
-    else
-      self[k] = v
-    end
-  end
-end
-

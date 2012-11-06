@@ -18,20 +18,23 @@ local PADV  = VECV/3  -- vertical pad needed to draw up/down curve when
                          -- outlet is lower from inlet
 local GHOST_ALPHA = 0.3
 local CLICK_DISTANCE = 15 -- how far do we still touch the link with the mouse
+local BIDIRECTIONAL_WIDTH = 3 -- how wide should the bi-directional link be
+local PADH = HPEN_WIDTH + BIDIRECTIONAL_WIDTH/2 -- keep some space for BIDIRECTIONAL_WIDTH
 
-function lib:init(source, target)
+function lib:init(source, target, link_type)
   self.source = source
   self.target = target
   self.outlet = source.slot
   self.inlet  = target.slot
   self.zone = source.slot.node.zone
+  self.link_type = link_type
   -- cache
   self.pen = mimas.Pen(2 * HPEN_WIDTH, self.outlet.node.color)
 
   self:slotMoved()
 end
 
-local function makePath(x1, y1, x2, y2)
+local function makePath(type, x1, y1, x2, y2)
   local path = mimas.Path()
   path:moveTo(x1, y1)
   local vect = math.min(VECV, math.abs(x2 - x1)*0.3 + VECV*0.1);
@@ -42,7 +45,13 @@ local function makePath(x1, y1, x2, y2)
     x2, y2 - vect,
     x2, y2
   )
-  return path, path:outlineForWidth(CLICK_DISTANCE)
+  if type == 'Bidirectional' then
+    local outline = path:outlineForWidth(CLICK_DISTANCE)
+    path = path:outlineForWidth(BIDIRECTIONAL_WIDTH)
+    return path, outline
+  else
+    return path, path:outlineForWidth(CLICK_DISTANCE)
+  end
 end
 
 -- must be called whenever a slot (or a NodeView/Patch) is moved.
@@ -55,11 +64,11 @@ function lib:slotMoved()
   local x2, y2 = self.target:globalPosition()
   x2 = x2 + SLOTW/2
   -- global position of this widget
-  local x = math.min(x1, x2) - HPEN_WIDTH
+  local x = math.min(x1, x2) - PADH
   local y = math.min(y1, y2) - PADV
-  local w = math.abs(x2 - x1) + 2*HPEN_WIDTH
+  local w = math.abs(x2 - x1) + 2*PADH
   local h = math.abs(y2 - y1) + 2*PADV
-  self.path, self.outline = makePath(x1 - x, y1 - y, x2 - x, y2 - y)
+  self.path, self.outline = makePath(self.link_type, x1 - x, y1 - y, x2 - x, y2 - y)
   -- own global position
   self:globalMove(x, y)
   self:resize(w, h)
@@ -69,6 +78,7 @@ function lib:slotMoved()
   self:update()
 end
 
+local White = mimas.colors.Red:colorWithAlpha(0.5)
 -- custom paint
 function lib:paint(p, w, h)
   local color = self.outlet.node.color
@@ -78,6 +88,7 @@ function lib:paint(p, w, h)
     color = color:colorWithAlpha(GHOST_ALPHA)
   end
   p:setPen(2*HPEN_WIDTH, color)
+
   p:drawPath(self.path)
 end
 
@@ -93,11 +104,10 @@ function lib:click(x, y, type)
     if type == DoubleClick then
       local slot = self.outlet
       -- remove link
-      local url = lk.absToRel(self.inlet:url(), slot.node.parent:url())
       slot.node:change {
         links = {
           [slot.name] = {
-            [url] = false
+            [self.inlet:url()] = false
           }
         }
       }

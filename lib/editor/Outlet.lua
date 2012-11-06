@@ -19,7 +19,7 @@ editor.Outlet = lib
 --   node/in/slot
 -- In the latter form, the "node" is searched in the same parent
 -- as the outlet's node.
-local function createLink(self, target_url)
+local function createLink(self, target_url, link_def)
   local process = self.node.process
   local target, err  = process:get(target_url, editor.Inlet)
 
@@ -39,7 +39,7 @@ local function createLink(self, target_url)
     end
   end
   -- automatically registers in self.links and self.links_by_target
-  local link = editor.Link(self, target, target_url)
+  local link = editor.Link(self, target, target_url, link_def)
   if self.view then
     link = link:updateView()
   end
@@ -77,11 +77,11 @@ function lib:set(def)
         if not link_def then
           link:delete()
         else
-          -- FIXME: update link
+          link:set(link_def)
         end
       elseif link_def then
         -- create
-        createLink(self, target_url)
+        createLink(self, target_url, link_def)
       end
     end
   end
@@ -92,8 +92,10 @@ local function dumpLinks(self)
   local links_by_target = self.links_by_target
   local list = {}
   local purl = self.node.process:url()
-  for target_url, link_def in pairs(links_by_target) do
-    list[lk.absolutizePath(target_url, purl)] = true
+  for target_url, link in pairs(links_by_target) do
+    list[lk.absolutizePath(target_url, purl)] = {
+      type = link.link_type
+    }
   end
   return list
 end
@@ -157,7 +159,7 @@ function lib:disconnectProcess(process)
   end
   for _, target_url in ipairs(target_urls) do
     -- this creates a pending link
-    createLink(self, target_url)
+    createLink(self, target_url, {type='Pending'})
   end
 end
 

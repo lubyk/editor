@@ -263,7 +263,6 @@ function lib:click(x, y, op, btn, mod)
                     [link.source.name] = {
                       -- remove old link
                       [inlet:url()] = false,
-                      --[lk.absToRel(inlet:url(), node.process:url())] = false,
                       -- create new link
                       [url] = true,
                     }
