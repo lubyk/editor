@@ -37,7 +37,7 @@ function lib:addMessage(url, typ, msg)
   msg = string.gsub(msg, '^%s*(.-)%s*$', '%1')
   -- If we have an error, remove [string "/some/url"]: part.
   if typ == 'error' then
-    msg = string.gsub(msg, '^%[string "'..url..'"]:','')
+    msg = string.gsub(msg, '^[^%[]*%[string "'..url..'"%]:','')
   end
   local data = self.data
   local entry = {
@@ -281,3 +281,4 @@ function private:clear()
   self.view_data = data
   self:unlock()
 end
+
