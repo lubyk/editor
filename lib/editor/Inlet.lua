@@ -16,7 +16,7 @@ editor.Inlet  = lib
 setmetatable(lib, {
   -- new method
  __call = function(lib, node_or_pending, name, definition)
-  local instance, node, pending_inlets
+  local self, node, pending_inlets
   if definition then
     node = node_or_pending
     pending_inlets = node.pending_inlets
@@ -24,37 +24,37 @@ setmetatable(lib, {
     pending_inlets = node_or_pending
   end
 
-  instance = pending_inlets[name]
+  self = pending_inlets[name]
 
-  if not instance then
-    instance = {
+  if not self then
+    self = {
       node  = node,
       name  = name,
       links = {},
     }
-    setmetatable(instance, lib)
+    setmetatable(self, lib)
   else
     -- resolving node relation for pending inlet
-    instance.node = node
+    self.node = node
   end
 
   if not definition then
     -- pending inlet
-    pending_inlets[name] = instance
-    return instance
+    pending_inlets[name] = self
+    return self
   else
     -- real
     pending_inlets[name] = nil
   end
 
-  instance:set(definition)
+  self:set(definition)
 
   -- only executed if real
   if node and node.view then
-    instance:updateView()
+    self:updateView()
   end
 
-  return instance
+  return self
 end})
 
 local function makeGhost(self)

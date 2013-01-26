@@ -374,6 +374,7 @@ function private:setSlots(key, list, has_all_slots)
 
   for _, def in ipairs(list) do
     local name = def.name
+    lk.log(yaml.dump(def))
     local slot = slot_by_name[name]
     if slot then
       slot:set(def)

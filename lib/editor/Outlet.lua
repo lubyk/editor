@@ -40,8 +40,9 @@ local function createLink(self, target_url, link_def)
   end
   -- automatically registers in self.links and self.links_by_target
   local link = editor.Link(self, target, target_url, link_def)
+  lk.log(self.name, link, target_url, yaml.dump(link_def))
   if self.view then
-    link = link:updateView()
+    link:updateView()
   end
 end
 
@@ -49,7 +50,7 @@ end
 setmetatable(lib, {
   -- new method
  __call = function(lib, node, name, def)
-  local instance = {
+  local self = {
     node  = node,
     name  = name,
     -- array contains all links including ghost links
@@ -57,14 +58,14 @@ setmetatable(lib, {
     links = {},
     links_by_target = {},
   }
-  setmetatable(instance, lib)
+  setmetatable(self, lib)
 
-  instance:set(def)
+  self:set(def)
 
   if node.view then
-    instance:updateView()
+    self:updateView()
   end
-  return instance
+  return self
 end})
 
 function lib:set(def)
