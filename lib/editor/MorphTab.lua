@@ -50,8 +50,7 @@ local       RightButton,       MousePress,       MetaModifier =
       mimas.RightButton, mimas.MousePress, mimas.MetaModifier
 
 function lib:click(x, y, op, btn, mod)
-  if op == MousePress and
-     (btn == RightButton or mod == MetaModifier) then
+  if op == MousePress then
     local sx, sy = self:globalPosition()
     private.showContextMenu(self, sx + x, sy + y)
   end
