@@ -56,7 +56,9 @@ function lib:selectNodeView(node_view, add_to_selection)
   if not add_to_selection then
     for _, view in pairs(self.selected_node_views) do
       view.selected = false
-      view:update()
+      if not view:deleted() then
+        view:update()
+      end
     end
     self.selected_node_views = {}
   end

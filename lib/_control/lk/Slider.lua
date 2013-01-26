@@ -16,7 +16,7 @@ local const = {
   THUMB_RATIO  = 20,
   THUMB_MAX    = 10,
 }
-_control.lk.Slider.const = const
+lib.const = const
 
 function lib:init(id, view)
   self:initControl(id, view)
@@ -33,6 +33,7 @@ function lib:resized(w, h)
 end
 
 function lib:control(x, y)
+  if typ == 'release' then return end
   local s
   if self.is_horizontal then
     s = x / self.w

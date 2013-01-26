@@ -26,7 +26,8 @@ function lib:resized(w, h)
   self.h = h
 end
 
-function lib:control(x, y)
+function lib:control(x, y, typ)
+  if typ == 'release' then return end
   self.conn_x.change(x / self.w)
   local h = self.h
   self.conn_y.change((h - y) / h)

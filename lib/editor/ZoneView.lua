@@ -152,8 +152,13 @@ function private:setupMenus()
   private.setupShowAction(self, menu, 'Patch',   'Ctrl+I', show.Patch,       self.patch_view)
   private.setupShowAction(self, menu, 'View',    'Ctrl+O', show.View,        self.control_tabs)
   private.setupShowAction(self, menu, 'Controls', 'Ctrl+P', show.Controls,   self.ctrl_library_view)
+  action = menu:addAction('Fullscreen', 'Ctrl+Meta+F', function(action)
+    self:swapFullScreen()
+    action:setChecked(self:isFullScreen())
+  end)
+  action:setCheckable(true)
 
-  local action = menu:addAction('Log', 'Ctrl+L', function(action)
+  action = menu:addAction('Log', 'Ctrl+L', function(action)
     local shown = true
     if self.log_view then
       self.log_view:hide()

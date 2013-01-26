@@ -168,12 +168,12 @@ function lib:click(x, y, op, btn, mod)
   elseif op == MousePress then
     if self.enabled then
       self.show_thumb = true
-      self:control(x, y, 'mouse')
+      self:control(x, y, op)
       self:update()
     end
   else
     if self.enabled and x > 0 and x < self.w and y > 0 and y < self.h then
-      self:control(x, y, 'click')
+      self:control(x, y, op)
     end
     self.show_thumb = false
     self:update()
@@ -186,6 +186,8 @@ function lib:change(def)
     [self.id] = def
   }
 end
+
+local MouseMove = mimas.MouseMove
 
 function lib:mouse(x, y)
   if self.meta_op then
@@ -204,7 +206,7 @@ function lib:mouse(x, y)
     end
   elseif self.enabled then
     self.show_thumb = true
-    self:control(x, y, 'mouse')
+    self:control(x, y, MouseMove)
   end
 end
 

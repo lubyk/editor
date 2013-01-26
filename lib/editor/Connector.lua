@@ -50,6 +50,7 @@ function lib:set(def, zone)
   local min = self.min
   local max = self.max
   local range = self.range
+
   if def.min or def.max then
     min = tonumber(def.min) or 0
     max = tonumber(def.max) or 1
@@ -75,6 +76,7 @@ function lib:set(def, zone)
   -- WE HAVE COMMENTED CODE WITH AN EXPERIMENTAL SYSTEM TO AVOID
   -- CONTROL OVERFLOW AT END OF THIS FILE.
 
+  lk.log('range', yaml.dump(def), range, self.min, self.max)
   if not range then
     --=============================================== Raw value
     -- not a number value

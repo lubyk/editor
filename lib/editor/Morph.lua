@@ -118,6 +118,7 @@ function private:mountDav()
   local work_path = self.zone:workPath()
   -- mount morph DAV server
   self.dav_url = string.format('http://%s:%i', self.ip, self.davport)
+  lk.log(self.dav_url)
   -- option -S == do not prompt when server goes offline
   local cmd = string.format('mount_webdav -S %s %s', self.dav_url, work_path)
   self.mount_fd = io.popen(cmd)
