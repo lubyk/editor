@@ -40,7 +40,6 @@ local function createLink(self, target_url, link_def)
   end
   -- automatically registers in self.links and self.links_by_target
   local link = editor.Link(self, target, target_url, link_def)
-  lk.log(self.name, link, target_url, yaml.dump(link_def))
   if self.view then
     link:updateView()
   end
