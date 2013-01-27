@@ -121,25 +121,21 @@ local editor_open_at = editor.Settings.editor_open_at
 
 function lib:editFile(filepath, line)
   -- TODO: properly escape 'url' so that any path works.
-  if editor_cmd then
-    local cmd
-    if line and editor_open_at then
-      if string.match(editor_open_at, '%%i.*%%s') then
-        cmd = string.format(editor_open_at, line, filepath)
-      else
-        cmd = string.format(editor_open_at, filepath, line)
-      end
-    elseif string.match(editor_cmd, '%%s') then
-      cmd = string.format(editor_cmd, filepath)
+  local cmd
+  if editor_open_at and line then
+    if string.match(editor_open_at, '%%i.*%%s') then
+      cmd = string.format(editor_open_at, line, filepath)
     else
-      cmd = string.format("%s '%s'", editor_cmd, filepath)
+      cmd = string.format(editor_open_at, filepath, line)
     end
-    io.popen(cmd)
+  elseif editor_cmd and string.match(editor_cmd, '%%s') then
+    cmd = string.format(editor_cmd, filepath)
+  elseif editor_cmd then
+    cmd = string.format("%s '%s'", editor_cmd, filepath)
   else
-    -- FIXME
-    -- use internal editor ?
-    io.popen(string.format('open "%s"', filepath))
+    cmd = io.popen(string.format('open "%s"', filepath))
   end
+  io.popen(cmd)
 end
 
 function lib:editNode(url, line)

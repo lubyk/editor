@@ -76,7 +76,6 @@ function lib:set(def, zone)
   -- WE HAVE COMMENTED CODE WITH AN EXPERIMENTAL SYSTEM TO AVOID
   -- CONTROL OVERFLOW AT END OF THIS FILE.
 
-  lk.log('range', yaml.dump(def), range, self.min, self.max)
   if not range then
     --=============================================== Raw value
     -- not a number value
