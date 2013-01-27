@@ -210,12 +210,13 @@ function lib:dropNode(node)
   end
 
   function edit.editingFinished(edit, name)
-    if not name or
-      name == '' or
-      not string.match(name, '%.') then
+    if not name or name == '' then
       -- abort
       finish()
     else
+      if not string.match(name, '%.') then
+        name = os.getenv('USER') .. '.' .. name
+      end
       if not string.match(name, '^~') then name = '~' .. name end
       finish(name, node.code)
     end

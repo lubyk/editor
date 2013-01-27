@@ -133,7 +133,7 @@ function lib:editFile(filepath, line)
   elseif editor_cmd then
     cmd = string.format("%s '%s'", editor_cmd, filepath)
   else
-    cmd = io.popen(string.format('open "%s"', filepath))
+    cmd = string.format('open "%s"', filepath)
   end
   io.popen(cmd)
 end
