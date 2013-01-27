@@ -106,9 +106,9 @@ function lib:paint(p, w, h)
     back = mimas.Brush(self.process.hue, 0.2, 0.2, 0.3)
     pen_color = mimas.Color(self.process.hue, 0.3, 0.8, 0.2)
   end
-  if self.online and self == self.zone.process_view_under then
+  if self == self.zone.process_view_under then
     -- under drag operation
-    back = mimas.Brush(self.process.hue, 0.3, 0.3, 0.5)
+    back = mimas.Brush(self.process.hue, 0.3, 0.5, 0.5)
   end
   editor.paintWithRoundedTitle(p, w, h, self.name, self.lbl_w, self.lbl_h, pen_color, mimas.Color(0, 0, 1), self.lbl_back, back)
 end

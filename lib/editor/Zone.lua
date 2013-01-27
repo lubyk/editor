@@ -168,8 +168,17 @@ function lib:selectLinkView(link_view)
   end
 end
 
--- Find a process from global position gx, gy.
+-- Find a process or the prototypes library view from global position gx, gy.
 function lib:processViewAtGlobal(gx, gy)
+  local view = self.view and self.view.library_view
+  if view and not view.hidden then
+    local vx, vy = view:globalPosition()
+    if gx > vx and gx < vx + view.w and
+      gy > vy and gy < vy + view.h then
+      return view
+    end
+  end
+
   for _, process in pairs(self.found_processes) do
     local view = process.view
     if view then

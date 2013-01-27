@@ -8,6 +8,7 @@
 --]]------------------------------------------------------
 local lib = lk.SubClass(mimas.Widget)
 editor.LibraryView = lib
+lib.type = 'editor.LibraryView'
 local private = {}
 
 --=============================================== CONSTANTS
@@ -54,7 +55,12 @@ function lib:resized(w, h)
 end
 
 function lib:paint(p, w, h)
-  p:fillRect(0, 0, w, h, mimas.Color(0, 0, 0.18))
+  if self == self.zone.process_view_under then
+    -- under drag operation
+    p:fillRect(0, 0, w, h, mimas.Color(0.5, 0.5, 0.5))
+  else
+    p:fillRect(0, 0, w, h, mimas.Color(0, 0, 0.18))
+  end
 end
 
 --=============================================== PRIVATE
@@ -177,6 +183,63 @@ function private:setupListView()
 end
 
 --=============================================== Prototype
+function lib:dropNode(node)
+  local abort = false
+  local code, name
+
+  -- add a LineEdit on top of self
+  local edit = mimas.LineEdit(node.name)
+  self:addWidget(edit)
+  edit:selectAll()
+  edit:resize(self.w, node.ghost.h)
+  local gx, gy = node.ghost:globalPosition()
+  gx = self:globalPosition()
+  edit:globalMove(gx, gy)
+  edit:show()
+  edit:setFocus()
+
+  local function finish(name, code)
+    if name then
+      self.library:addNode(name, code)
+      private.updateFilter(self, '')
+    end
+
+    -- clear
+    self.zone.process_view_under = nil
+    self:update()
+  end
+
+  function edit.editingFinished(edit, name)
+    if not name or
+      name == '' or
+      not string.match(name, '%.') then
+      -- abort
+      finish()
+    else
+      if not string.match(name, '^~') then name = '~' .. name end
+      finish(name, node.code)
+    end
+    
+    -- avoid double call ?
+    edit.editingFinished = nil
+    edit:hide()
+  end
+
+  function edit:keyboard(key, on)
+    if on and key == mimas.Key_Escape then
+      self:editingFinished()
+      self:hide()
+    else
+      -- normal ops
+      return true
+    end
+  end
+
+  node.dragging = false
+  node.ghost:delete()
+  node.ghost = nil
+end
+
 private.prototype = {}
 
 function private.prototype:drag()

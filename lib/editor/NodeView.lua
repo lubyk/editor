@@ -224,7 +224,24 @@ function lib:click(x, y, op, btn, mod)
       local zone = self.node.process.zone
       -- drop
       -- detect drop zone
-      local process = (zone.process_view_under or self.node.process.view).process
+      -- Drop on prototype library ?
+
+      -- Drop on process ?
+
+      -- Drop out of process view = remove ?
+      local view = zone.process_view_under
+      if view and view.type == 'editor.LibraryView' then
+        view:dropNode(node)
+        return
+      elseif not view then
+        node.dragging = false
+        node.ghost:delete()
+        node.ghost = nil
+        return
+      end
+
+      local process = view.process
+
       local gx,  gy  = node.ghost:globalPosition()
       local gpx, gpy = process.view:globalPosition()
       local node_x = gx - gpx
@@ -349,6 +366,7 @@ function lib:mouse(x, y)
     if zone.process_view_under then
       zone.process_view_under:update()
     end
+
     if old_process_view_under then
       old_process_view_under:update()
     end

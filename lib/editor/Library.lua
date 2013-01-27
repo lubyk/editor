@@ -62,14 +62,13 @@ end
 -- Recreate database from content in filesystem.
 function lib:sync()
   local db = self.db
-  db:exec(private.gsub('DELETE from NODE_TABLE;', 'NODE_TABLE', self.table_name))
   for _, dir in ipairs(self.sources) do
     for folder in dir:list() do
       if lk.fileType(folder) == 'directory' then
         local _, lib_name = lk.pathDir(folder)
         local dir = lk.Dir(folder)
         for file in dir:glob('[.]lua$') do
-          private.addNode(self, lib_name, file)
+          private.addNodeFromFile(self, lib_name, file)
         end
       end
     end
@@ -181,25 +180,55 @@ function private:prepareDb()
     SELECT COUNT(*) FROM NODE_TABLE WHERE keywords LIKE :filter;
   ]], 'NODE_TABLE', self.table_name))
 
+  self.get_node_from_name = db:prepare(gsub([[
+    SELECT id, name, path, code, keywords FROM NODE_TABLE WHERE name = :name;
+  ]], 'NODE_TABLE', self.table_name))
+
   ------------------------------------------------------------  WRITE nodes
   self.add_node_stmt = db:prepare(gsub([[
     INSERT INTO NODE_TABLE VALUES (NULL, :name, :path, :code, :keywords);
   ]], 'NODE_TABLE', self.table_name))
+
+  self.update_node_stmt = db:prepare(gsub([[
+    UPDATE NODE_TABLE SET name = :name, path = :path, code = :code, keywords = :keywords WHERE id = :id;
+  ]], 'NODE_TABLE', self.table_name))
 end
 
-function private:addNode(lib_name, filepath)
-  local name = lib_name .. '.' .. string.match(filepath, '([^%./]+)%.lua$')
-  local stmt = self.add_node_stmt
-  local code
-  local keywords
-  if not self.ignore_code then
-    code = lk.readAll(filepath)
-    keywords = string.match(code, '@keywords ([^\n]+)')
-    if keywords then
-      keywords = keywords:gsub(',',' '):gsub(' +',' ') .. ' ' .. name
-    end
-  end
+function private:getNodeFromName(name)
+  local stmt = self.get_node_from_name
   stmt:bind_names {
+    name = name
+  }
+  local row = stmt:first_row()
+  stmt:reset()
+  if row then
+    return {
+      id       = row[1],
+      name     = row[2],
+      path     = row[3],
+      code     = row[4],
+      keywords = row[5],
+    }
+  end
+end
+
+function lib:addNode(name, code)
+  local keywords = string.match(code, '@keywords ([^\n]+)')
+  if keywords then
+    keywords = keywords:gsub(',',' '):gsub(' +',' ') .. ' ' .. name
+  end
+
+  local node = private.getNodeFromName(self, name)
+  local id, stmt
+  if node then
+    id = node.id
+    stmt = self.update_node_stmt
+  else
+    stmt = self.add_node_stmt
+  end
+
+  stmt:bind_names {
+    id   = id,
     name = name,
     path = filepath,
     code = code,
@@ -207,6 +236,18 @@ function private:addNode(lib_name, filepath)
   }
   stmt:step()
   stmt:reset()
+end
+
+function private:addNodeFromFile(lib_name, filepath)
+  local name = lib_name .. '.' .. string.match(filepath, '([^%./]+)%.lua$')
+  local code
+  local keywords
+  if not self.ignore_code then
+    code = lk.readAll(filepath)
+  else
+    code = ''
+  end
+  self:addNode(name, code)
 end
 
 function private.prepareFilter(filter)
