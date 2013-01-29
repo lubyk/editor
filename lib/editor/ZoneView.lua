@@ -154,7 +154,6 @@ function private:setupMenus()
   private.setupShowAction(self, menu, 'Controls', 'Ctrl+P', show.Controls,   self.ctrl_library_view)
   action = menu:addAction('Fullscreen', 'Ctrl+Meta+F', function(action)
     self:swapFullScreen()
-    action:setChecked(self:isFullScreen())
   end)
   action:setCheckable(true)
 
@@ -338,8 +337,8 @@ function lib:showSplash()
         {}, -- stretch
         {'space', 120},
         {'btn', 'New...'},
-        {'btn', 'Open...'},
-        {'btn', 'Open Recent', default = true},
+        {'btn', 'Open Other...'},
+        {'btn', 'Open', default = true},
       },
     },
   }

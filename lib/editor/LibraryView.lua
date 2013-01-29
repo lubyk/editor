@@ -237,8 +237,7 @@ function lib:dropNode(node)
   end
 
   node.dragging = false
-  node.ghost:delete()
-  node.ghost = nil
+  node:updateView()
 end
 
 private.prototype = {}

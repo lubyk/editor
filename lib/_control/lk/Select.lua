@@ -20,6 +20,8 @@ function lib:init(id, view)
   self:setupConnectors {
     s = 'selection',
   }
+  self.range    = nil
+  self.no_range = true
   self:resize(const.DEFAULT.w, const.DEFAULT.h)
 end
 

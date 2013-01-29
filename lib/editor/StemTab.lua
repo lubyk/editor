@@ -139,7 +139,7 @@ function lib:mouse(x, y)
     self.dragging = true
     self.ghost = editor.ProcessView { name = '', hue = math.random(), nodes = {}, pending_inlets = {}, zone = zone }
     self.ghost.is_ghost = true
-    self.ghost:resize(EDIT_WIDTH + 20,100)
+    self.ghost:resize(200, 200)
     view:addWidget(self.ghost)
     self.ghost:show()
   end

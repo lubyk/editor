@@ -83,9 +83,7 @@ end
 local MousePress, MouseRelease = mimas.MousePress, mimas.MouseRelease
 
 function lib:click(x, y, op, btn, mod)
-  if not self.process.online then
-    return
-  end
+  if not self.process.online then return end
   if op == MousePress then
     local sx, sy = self:globalPosition()
     private.showContextMenu(self, sx + x, sy + y)
@@ -103,6 +101,10 @@ function private:showContextMenu(gx, gy)
   end
   self.menu = menu
 
+  menu:addAction('Restart', '', function()
+    self.process:restart()
+  end)
+
   local show_hide
   if self.process.view then
     show_hide = 'Hide'
@@ -111,10 +113,6 @@ function private:showContextMenu(gx, gy)
   end
   menu:addAction(show_hide, '', function()
     self.process:toggleView()
-  end)
-
-  menu:addAction('Restart', '', function()
-    self.process:restart()
   end)
 
   menu:addAction('Remove', '', function()

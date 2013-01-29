@@ -51,7 +51,7 @@ function lib:set(def, zone)
   local max = self.max
   local range = self.range
 
-  if def.min or def.max then
+  if (def.min or def.max) and not self.no_range then
     min = tonumber(def.min) or 0
     max = tonumber(def.max) or 1
     range = max - min

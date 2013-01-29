@@ -21,10 +21,14 @@ local CLICK_DISTANCE = 15 -- how far do we still touch the link with the mouse
 local BIDIRECTIONAL_WIDTH = 3 -- how wide should the bi-directional link be
 local PADH = HPEN_WIDTH + BIDIRECTIONAL_WIDTH/2 -- keep some space for BIDIRECTIONAL_WIDTH
 
+link_count = 0
 function lib:init(source, target, link_type)
   self.source = source
   self.target = target
   self.outlet = source.slot
+  if not target then
+    lk.log(debug.traceback())
+  end
   self.inlet  = target.slot
   self.zone = source.slot.node.zone
   self.link_type = link_type

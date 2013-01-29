@@ -235,8 +235,7 @@ function lib:click(x, y, op, btn, mod)
         return
       elseif not view then
         node.dragging = false
-        node.ghost:delete()
-        node.ghost = nil
+        node:updateView()
         return
       end
 
@@ -247,7 +246,7 @@ function lib:click(x, y, op, btn, mod)
       local node_x = gx - gpx
       local node_y = gy - gpy
 
-      if self.node.process ~= process then
+      if node.process ~= process then
         -- Processes to update
         local changed_processes = {}
         local old_process = self.node.process
@@ -296,9 +295,16 @@ function lib:click(x, y, op, btn, mod)
         for view_name, view in pairs(self.zone.views) do
           for wid_id, widget in pairs(view.cache) do
             local connect = widget.connect
+            -- connect:
+            --   s:
+            --     min: 0
+            --     url: /a/three/_/x
+            --     max: 1
+            
             if connect then
               for dir, def in pairs(connect) do
-                for target, opt in pairs(def) do
+                if def then
+                  target = def.url
                   if string.sub(target, 1, base_url_len) == base_url then
                     -- Update
                     local new_target = new_url .. string.sub(target, base_url_len + 1)
@@ -308,8 +314,7 @@ function lib:click(x, y, op, btn, mod)
                           [wid_id] = {
                             connect = {
                               [dir] = {
-                                [target]     = false,
-                                [new_target] = opt,
+                                url = new_target,
                               }
                             }
                           }
@@ -328,6 +333,12 @@ function lib:click(x, y, op, btn, mod)
           p:change(def)
         end
       else
+        -- Process did not change: simply move back.
+        local zone = self.node.process.zone
+        local pv = zone.process_view_under
+        zone.process_view_under = nil
+        if pv then pv:update() end
+
         node.dragging = false
         local ghost_x, ghost_y = node.ghost:position()
         node:change {
@@ -361,13 +372,21 @@ function lib:mouse(x, y)
     ghost:globalMove(gx, gy)
 
     local old_process_view_under = zone.process_view_under
-    zone.process_view_under = zone:processViewAtGlobal(gx + self.click_position.x, gy + self.click_position.y)
+    local pv = zone:processViewAtGlobal(gx + self.click_position.x, gy + self.click_position.y)
 
-    if zone.process_view_under then
-      zone.process_view_under:update()
+    zone.process_view_under = pv
+
+    if pv then
+      if pv == (node.process and node.process.view) then
+        pv.highlight = false
+      else
+        pv.highlight = true
+      end
+      pv:update()
     end
 
-    if old_process_view_under then
+    if old_process_view_under and old_process_view_under ~= pv then
+      old_process_view_under.highlight = false
       old_process_view_under:update()
     end
 

@@ -69,10 +69,11 @@ end})
 -- remote. To actually change the remote Node, use "change".
 function lib:set(def)
   local view_update = false
+  local reset_params = def.code and true
   for k, v in pairs(def) do
     if k == '_' then
       -- setParams
-      private.setParams(self, v)
+      private.setParams(self, v, reset_params)
     elseif k == 'code' then
       private.setCode(self, v)
     elseif k == 'hue' or
@@ -144,12 +145,11 @@ function lib:setHue(hue)
   self.bg_color = mimas.Color(self.hue, 0.2, 0.2)
 end
 
--- The process is going offline, we need to transform connected
--- inlets from other processes to pending_inlets.
 function lib:disconnectProcess(process)
-  for _, outlet in ipairs(self.slots.outlets) do
-    outlet:disconnectProcess(process)
-  end
+  -- We don't need to do this (it's buggy and creates double Link objects).
+  -- for _, outlet in ipairs(self.slots.outlets) do
+  --   outlet:disconnectProcess(process)
+  -- end
 end
 
 function lib:error(...)
@@ -172,14 +172,14 @@ function lib:edit()
 end
 
 function lib:deleteView()
-  if self.view then
-    self.view:delete()
-    self.view  = nil
-  end
-
   if self.ghost then
     self.ghost:delete()
     self.ghost = nil
+  end
+
+  if self.view then
+    self.view:delete()
+    self.view  = nil
   end
 
   for _, list in pairs(self.slots) do
@@ -256,16 +256,18 @@ function lib.makeGhost(node_def, zone)
 end
 
 -- We received new parameter values from remote, update the controls.
-function private:setParams(def)
+function private:setParams(def, reset_params)
+  if reset_params then private.resetParams(self, def) end
+
   local params = self.params
   for k, v in pairs(def) do
     if type(v) == 'table' then
+      -- Multi valued parameter
       local param = params[k]
       if not param or type(param) ~= 'table' then
         param = {}
         params[k] = param
       end
-      print("CHANGED", k, yaml.dump(v))
       for sk, sv in pairs(v) do
         param[sk] = sv
         local list = self.controls[k..'.'..sk]
@@ -282,6 +284,25 @@ function private:setParams(def)
         for _, conn in ipairs(list) do
           conn.changed(v)
         end
+      end
+    end
+  end
+end
+
+function private:resetParams(def)
+  self.params = {}
+
+  for k, list in pairs(self.controls) do
+    if def[k] == nil then
+      -- disconnect
+      for _, conn in ipairs(list) do
+        conn.node = nil
+        conn.node_conn_list = nil
+        conn.ctrl:change {
+          connect = {
+            [conn.name] = false,
+          }
+        }
       end
     end
   end

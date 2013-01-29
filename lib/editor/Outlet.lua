@@ -138,29 +138,12 @@ end
 
 -- Delete all links and views related to this slot.
 function lib:deleteViews()
-  for _,link in ipairs(self.links) do
+  for _,link in pairs(self.links) do
     link:deleteView()
   end
 
   self.view = nil
   self.ghost = nil
-end
-
--- The process is going offline, we need to transform connected
--- inlets from other processes to pending_inlets.
-function lib:disconnectProcess(process)
-  local target_urls = {}
-  for i, link in ipairs(self.links) do
-    if link.target_url:match('^/' .. process.name) then
-      -- becomes a pending link (changing an existing key while traversing table is ok).
-      table.insert(target_urls, link.target_url)
-      self.links[i] = nil
-    end
-  end
-  for _, target_url in ipairs(target_urls) do
-    -- this creates a pending link
-    createLink(self, target_url, {type='Pending'})
-  end
 end
 
 function lib:url()

@@ -50,6 +50,7 @@ local function setNodes(self, nodes_def)
         -- remove node
         node:delete()
         nodes[node_name] = nil
+        pending_nodes[node_name] = nil
       end
     elseif node_def then
       -- create new node
@@ -287,10 +288,10 @@ function lib:newNode(definition)
   DESCRIPTION
 
 --]]
+local i, o, p = lubyk.i, lubyk.o, lubyk.p
 
-defaults {
+p {
 }
-
 
 ]=]
   end
@@ -350,9 +351,11 @@ function lib:disconnect()
     -- mark as offline
     self.tab:setHue(self.hue)
   end
-  for _, node in pairs(self.nodes) do
+  for name, node in pairs(self.nodes) do
     node:disconnect()
   end
+  -- FIXME: If we set self.nodes = {}, we no longer have LinkView problems
+  -- but we have controls that do not reconnect...
 end
 
 function lib:url()

@@ -24,6 +24,7 @@ setmetatable(lib, {
     target_url = target_url,
     link_type = link_def.type,
   }
+  
   -- register in source and target
   table.insert(target.links, self)
   table.insert(source.links, self)
@@ -90,6 +91,7 @@ end
 
 -- called from Outlet (source)
 function lib:delete()
+  lk.log('delete', self.target_url)
   removeFromList(self, self.source.links)
   local link = self.source.links_by_target[self.target_url]
   if link == self then
@@ -100,11 +102,13 @@ function lib:delete()
 end
 
 function lib:deleteView()
+  lk.log('deleteView', self.view)
   if self.view then
     local zone = self.source.node.zone
     if zone.selected_link_view == self.view then
       zone.selected_link_view = nil
     end
+    self.view:hide()
     self.view:delete()
     self.view = nil
   end
