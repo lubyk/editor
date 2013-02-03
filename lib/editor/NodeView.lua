@@ -300,7 +300,6 @@ function lib:click(x, y, op, btn, mod)
             --     min: 0
             --     url: /a/three/_/x
             --     max: 1
-            
             if connect then
               for dir, def in pairs(connect) do
                 if def then

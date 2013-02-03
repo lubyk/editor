@@ -243,7 +243,7 @@ function private:addNodeFromFile(lib_name, filepath)
   local code
   local keywords
   if not self.ignore_code then
-    code = lk.readAll(filepath)
+    code = lk.content(filepath)
   else
     code = ''
   end
