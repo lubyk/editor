@@ -33,6 +33,7 @@ function lib:changed(key, value)
 end
 
 function lib:initControl(id, view)
+  self.params = yaml.load(yaml.dump(self.const.DEFAULT))
   self.id   = id
   self.view = view
   -- Sorted list of connectors
@@ -41,7 +42,7 @@ function lib:initControl(id, view)
     self.zone = view.zone
   end
   self:setCssClass('control')
-  self:setHue(math.random())
+  self:setHue(math.floor(10 * math.random()) / 10)
 end
 
 function lib:connector(key)
@@ -51,6 +52,13 @@ end
 function lib:set(def)
   private.setPosition(self, def)
   private.setConnections(self, def)
+  local params = self.params
+  for k, v in pairs(def) do
+    params[k] = v
+  end
+  local p = self.setParams
+  if p then p(self, params) end
+  self:update()
 end
 
 --=============================================== Class methods
@@ -276,10 +284,69 @@ function private:showContextMenu(gx, gy)
     self.zone.view.link_editor = link_editor
     link_editor:setCtrl(self)
   end)
+
+  menu:addAction('Edit', '', function()
+    private.editDialog(self, gx, gy)
+  end)
+
   menu:addAction('Remove', '', function()
     self:change(false)
   end)
 
   menu:popup(gx - 5, gy - 5)
+end
+
+function lib:editDialog()
+  local gx, gy = self:globalPosition()
+  private.editDialog(self, gx, gy)
+end
+
+-- Show edit connector dialog
+function private:editDialog(gx, gy)
+
+  local dlg = mimas.SimpleDialog {
+    parent     = self.view,
+    flag       = mimas.WidgetFlag,
+    background = 'rounded',
+    'Edit link',
+    private.getParams(self),
+    {
+      'hbox', {},
+      {'btn', 'Cancel'},
+      {'btn', 'OK', default = true},
+    },
+  }
+  dlg:globalMove(gx - 5, gy - 5)
+  dlg:show()
+  self.dlg = dlg
+  
+  function dlg.btn(dlg, btn_name)
+    if btn_name == 'OK' then
+      self:change(dlg.form)
+    else
+      -- cancel = ignore
+    end
+
+    dlg:hide()
+    self.dlg = nil
+  end
+  dlg:show()
+end
+
+
+function private:getParams()
+  local tbl = {'vbox', box = true}
+  local PARAM_NAMES = self.const.PARAM_NAMES or {}
+  local DEFAULT = self.const.DEFAULT
+  local params  = self.params
+  for _, e in ipairs(PARAM_NAMES) do
+    local k, name = e[1], e[2]
+    print(k, name)
+    table.insert(tbl, name)
+    table.insert(tbl, {'input', k, params[k] or DEFAULT[k]})
+  end
+  table.insert(tbl, 'Hue')
+  table.insert(tbl, {'input', 'hue', self.hue})
+  return tbl
 end
 

@@ -25,9 +25,9 @@ function lib.new(ctrl, name, info)
     name  = name,
     info  = info,
     -- Scaled remote value.
-    remote_value = 0,
+    remote_value = nil,
     -- Unscaled remote value.
-    raw_remote_value = 0,
+    raw_remote_value = nil,
     -- Value set by GUI (0-1 scale).
     value = 0,
   }
@@ -51,7 +51,7 @@ function lib:set(def, zone)
   local max = self.max
   local range = self.range
 
-  if (def.min or def.max) and not self.no_range then
+  if (def.min or def.max) and not self.ctrl.no_range then
     min = tonumber(def.min) or 0
     max = tonumber(def.max) or 1
     range = max - min
@@ -111,9 +111,11 @@ function lib:set(def, zone)
     end
     -- ! No 'self' here.
     function self.changed(value)
-      self.raw_remote_value = value
-      self.remote_value = value
-      changed(ctrl, name, value)
+      if type(value) == 'number' then
+        self.raw_remote_value = value
+        self.remote_value = value
+        changed(ctrl, name, value)
+      end
     end
 
 
@@ -133,11 +135,13 @@ function lib:set(def, zone)
     end
     -- ! No 'self' here.
     function self.changed(value)
-      -- value before scaling
-      self.raw_remote_value = value
-      value = (value - min) / range
-      self.remote_value = value
-      changed(ctrl, name, value)
+      if type(value) == 'number' then
+        -- value before scaling
+        self.raw_remote_value = value
+        value = (value - min) / range
+        self.remote_value = value
+        changed(ctrl, name, value)
+      end
     end
   end
 

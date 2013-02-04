@@ -7,9 +7,9 @@
 
 --]]------------------------------------------------------
 local lib = lk.SubClass(editor.Control)
-_control.lk.Slider = lib
+_control.lk.Slider = lib.new
 
--- default slider size
+-- default Slider size
 local const = {
   DEFAULT      = {w = 40, h = 100},
   TEXT_PADDING = 5,
@@ -19,6 +19,7 @@ local const = {
 lib.const = const
 
 function lib:init(id, view)
+  local mt = debug.getmetatable(self)
   self:initControl(id, view)
   self:setupConnectors {
     s = 'Slider value',
@@ -50,10 +51,11 @@ local noPen   = mimas.NoPen
 
 function lib:paintControl(p, w, h)
   local cs = self.conn_s
+  local rv = cs.remote_value or 0
 
   if self.is_horizontal then
     --=============================================== HORIZONTAL
-    local s = cs.remote_value * w
+    local s = rv * w
     p:fillRect(0, 0, s, h, self.fill_color)
     if self.show_thumb then
       -- thumb
@@ -66,7 +68,7 @@ function lib:paintControl(p, w, h)
     end
   else
     --=============================================== VERTICAL
-    local s = cs.remote_value * h
+    local s = rv * h
     p:fillRect(0, h-s, w, s, self.fill_color)
     if self.show_thumb then
       -- thumb

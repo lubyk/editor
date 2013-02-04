@@ -7,7 +7,7 @@
 
 --]]------------------------------------------------------
 local lib = lk.SubClass(editor.Control)
-_control.lk.Select = lib
+_control.lk.Select = lib.new
 
 -- default select size and options
 local const = {
@@ -79,7 +79,7 @@ function lib:paintControl(p, w, h)
     end
   else
     fill_sz = self.h / self.n
-    fill_pos = cs.remote_value * fill_sz
+    fill_pos = (cs.remote_value or 0) * fill_sz
     p:fillRect(0, h - fill_pos, w, fill_sz, self.fill_color)
     if self.show_thumb then
       -- thumb

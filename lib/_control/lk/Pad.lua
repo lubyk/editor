@@ -7,9 +7,17 @@
 
 --]]------------------------------------------------------
 local lib = lk.SubClass(editor.Control)
-_control.lk.Pad = lib
+_control.lk.Pad = lib.new
 
-local const = _control.lk.Slider.const
+-- default Pad size
+local const = {
+  DEFAULT      = {w = 100, h = 100},
+  TEXT_PADDING = 5,
+  THUMB_RATIO  = 20,
+  THUMB_MAX    = 10,
+}
+lib.const = const
+
 local TEXT_PADDING = 5
 
 function lib:init(id, view)
@@ -40,8 +48,8 @@ local noPen   = mimas.NoPen
 function lib:paintControl(p, w, h)
   local cx = self.conn_x
   local cy = self.conn_y
-  local x = cx.remote_value * w
-  local y = cy.remote_value * h
+  local x = (cx.remote_value or 0) * w
+  local y = (cy.remote_value or 0) * h
 
   if cx.inverted and cy.inverted then
     p:fillRect(x, 0,   w-x, h-y, self.fill_color)
