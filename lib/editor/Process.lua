@@ -268,32 +268,7 @@ end
 -- definition.
 function lib:newNode(definition)
   if not definition.class then
-    definition.code = definition.code or [=[
---[[------------------------------------------------------
-
-  NAME
-  --------
-
-  SHORT_DESCR
-
-  Inlets
-  --------------------------------------------------------
-  [INLET]    DESCR
-
-
-  Outlets
-  --------------------------------------------------------
-  [OUTLET]   DESCR
-
-  DESCRIPTION
-
---]]
-local i, o, p = lubyk.i, lubyk.o, lubyk.p
-
-p {
-}
-
-]=]
+    definition.code = definition.code or lk.Node.DEFAULT_CODE
   end
   definition.name = lk.strip(definition.name or 'new node')
   self:change {nodes = {[definition.name] = definition}}

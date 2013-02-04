@@ -192,6 +192,11 @@ function private:prepareDb()
   self.update_node_stmt = db:prepare(gsub([[
     UPDATE NODE_TABLE SET name = :name, path = :path, code = :code, keywords = :keywords WHERE id = :id;
   ]], 'NODE_TABLE', self.table_name))
+  
+  ------------------------------------------------------------  DELETE node
+  self.delete_node_stmt = db:prepare(gsub([[
+    DELETE FROM NODE_TABLE WHERE id = :id;
+  ]], 'NODE_TABLE', self.table_name))
 end
 
 function private:getNodeFromName(name)
@@ -233,6 +238,18 @@ function lib:addNode(name, code)
     path = filepath,
     code = code,
     keywords = keywords or name,
+  }
+  stmt:step()
+  stmt:reset()
+end
+
+function lib:removeNode(name)
+  local node = private.getNodeFromName(self, name)
+  if not node then return end
+  local stmt = self.delete_node_stmt
+
+  stmt:bind_names {
+    id = node.id,
   }
   stmt:step()
   stmt:reset()

@@ -65,17 +65,26 @@ end
 
 --=============================================== PRIVATE
 
-function private:clickInList(info, x, y, type, btn, mod)
-  if type == MousePress and info then
-    -- store position but only start drag when moved START_DRAG_DIST away
-    self.click_position = {
-      x        = x,
-      y        = y,
-    }
-    self.selected_obj = info
-  elseif type == DoubleClick then
+function private:clickInList(info, x, y, op, btn, mod)
+  if op == MousePress and info then
+    if btn == RightButton or mod == mimas.MetaModifier then
+      local sx, sy = self:globalPosition()
+      -- Select line
+      local row_i = self.list_view:indexAt(x, y)
+      self.list_view:selectRow(row_i)
+      self.list_view:update()
+      private.showContextMenu(self, sx + math.max(0, x - 40), sy + y + 40, info)
+    else
+      -- store position but only start drag when moved START_DRAG_DIST away
+      self.click_position = {
+        x        = x,
+        y        = y,
+      }
+      self.selected_obj = info
+    end
+  elseif op == DoubleClick then
     -- noop
-  elseif type == MouseRelease then
+  elseif op == MouseRelease then
     if self.dragging then
       --=============================================== DROP OBJECT
       private[self.table_name].drop(self)
@@ -132,6 +141,9 @@ function private:setupSearch()
   self.vbox:addWidget(s)
 end
 
+
+local SELECT_COLOR = mimas.Color(0.1, 1, 0.3)
+local MousePress = mimas.MousePress
 --=============================================== ListView
 function private:setupListView()
   local lv = self
@@ -150,18 +162,25 @@ function private:setupListView()
     return library:node(lv.filter, row_i).name
   end
 
-  function view:click(x, y, type, btn, mod)
+  function view:click(x, y, op, btn, mod)
     local row_i = self:indexAt(x, y)
     local node_def
-    if row_i then
+    if op == MousePress and row_i then
       node_def = library:node(lv.filter, row_i)
+      lv.selected_row = row_i
+    elseif not lv.dragging then
+      lv.selected_row = nil
+      self:update()
     end
-    return private.clickInList(self.lib_view, node_def, x, y, type, btn, mod)
+    return private.clickInList(self.lib_view, node_def, x, y, op, btn, mod)
   end
 
   view:enablePaintItem(true)
   local align = mimas.AlignLeft + mimas.AlignVCenter
   function view:paintItem(p, x, y, w, h, row)
+    if lv.selected_row == row then
+      p:fillRect(x, y, w, h, SELECT_COLOR)
+    end
     local fullname = library:node(lv.filter, row).name
     local base, name = string.match(fullname, '^(.*%.)(.-)$')
     name = name or fullname
@@ -278,6 +297,7 @@ function private.prototype:drop()
     self.ghost = nil
     self.click_position = nil
     self.dragging = nil
+    self.selected_row = nil
   end)
 end
 
@@ -318,5 +338,21 @@ function private.control:drop()
   -- clear
   self.click_position = nil
   self.dragging = nil
+  self.selected_row = nil
+end
+
+function private:showContextMenu(gx, gy, info)
+  local menu = mimas.Menu('')
+  if self.menu and not menu:deleted() then
+    self.menu:hide()
+  end
+  self.menu = menu
+
+  menu:addAction('Remove', '', function()
+    self.library:removeNode(info.name)
+    self.list_view:reset()
+  end)
+
+  menu:popup(gx, gy)
 end
 
