@@ -12,6 +12,10 @@ editor.Control = lib
 local private = {}
 local DRAG_CORNER = 20
 
+lib.ErrorColor = mimas.Color(0, 0.8, 0.4, 1)
+lib.DisabledColor = mimas.Color(0, 0, 0.5)
+lib.DisabledPen = mimas.Pen(4, mimas.Color(0, 0, 0.7))
+
 --=============================================== METHODS TO REIMPLEMENT
 -- Initialize control
 function lib:init(id, view)
@@ -113,8 +117,8 @@ function lib:setHue(h)
     self.fill_color = mimas.Color(h, 0.5, 0.5)
     self.pen = mimas.Pen(4, mimas.Color(h, 0.7, 0.7))
   else
-    self.fill_color = mimas.Color(0, 0, 0.5)
-    self.pen = mimas.Pen(4, mimas.Color(0, 0, 0.7))
+    self.fill_color = lib.DisabledColor
+    self.pen = lib.DisabledPen
   end
   self.thumb_color = mimas.Color(h, 0, 1, 0.5)
   self:update()
