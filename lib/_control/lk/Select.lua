@@ -39,16 +39,17 @@ function lib:resized(w, h)
 end
 
 local MouseMove = mimas.MouseMove
+local MouseRelease = mimas.MouseRelease
 
 function lib:control(x, y, typ)
-  if typ == 'release' then return end
+  if typ == MouseRelease then return end
   local v
   local cs = self.conn_s
   -- Detect click position to get value.
   if self.dir == 'Horizontal' then
-    v = math.ceil(x * self.n / self.w)
+    v = math.floor(x * self.n / self.w)
   else
-    v = math.ceil((self.h - y) * self.n / self.h)
+    v = math.floor((self.h - y) * self.n / self.h)
   end
   if typ == MouseMove and v == cs.remote_value then return end
   cs.change(v)
@@ -59,38 +60,45 @@ local noPen   = mimas.NoPen
 
 function lib:paintControl(p, w, h)
   local cs = self.conn_s
-  local fill_sz
+  local rv = cs.remote_value
+  local elem_sz
   local fill_pos
   if self.dir == 'Horizontal' then
-    fill_sz = self.w / self.n
-    fill_pos = (cs.remote_value-1) * fill_sz
-    p:fillRect(fill_pos, 0, fill_sz, h, self.fill_color)
+    elem_sz = self.w / self.n
+    if rv then
+      fill_pos = rv * elem_sz
+      p:fillRect(fill_pos, 0, elem_sz, h, self.fill_color)
+    end
+
     if self.show_thumb then
       -- thumb
-      local thumb_pos = (cs.value-1) * fill_sz
-      p:fillRect(thumb_pos, 0, fill_sz, h, self.thumb_color)
+      local thumb_pos = cs.value * elem_sz
+      p:fillRect(thumb_pos, 0, elem_sz, h, self.thumb_color)
     end
 
     -- option separation
     p:setPen(1, self.fill_color)
     for i = 1,self.n - 1 do
-      local x = fill_sz * i
+      local x = elem_sz * i
       p:drawLine(x, 0, x, h)
     end
   else
-    fill_sz = self.h / self.n
-    fill_pos = (cs.remote_value or 0) * fill_sz
-    p:fillRect(0, h - fill_pos, w, fill_sz, self.fill_color)
+    elem_sz = self.h / self.n
+    if rv then
+      fill_pos = rv * elem_sz
+      p:fillRect(0, h - fill_pos, w, elem_sz, self.fill_color)
+    end
+
     if self.show_thumb then
       -- thumb
-      local thumb_pos = cs.value * fill_sz
-      p:fillRect(0, h - thumb_pos, w, fill_sz, self.thumb_color)
+      local thumb_pos = cs.value * elem_sz
+      p:fillRect(0, h - thumb_pos, w, elem_sz, self.thumb_color)
     end
     
     -- option separation
     p:setPen(1, self.fill_color)
     for i = 1,self.n - 1 do
-      local y = fill_sz * i
+      local y = elem_sz * i
       p:drawLine(0, y, w, y)
     end
   end

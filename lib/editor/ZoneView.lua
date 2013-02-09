@@ -319,6 +319,10 @@ function private.dialog:addView()
   dlg:show()
 end
 
+local NEW_BTN = 'New...'
+local OPEN_BTN = 'Open'
+local OPEN_OTHER_BTN = 'Open Other...'
+
 function lib:showSplash()
   local data = {}
   -- Copy so that the list does not change.
@@ -336,9 +340,9 @@ function lib:showSplash()
       {'hbox',
         {}, -- stretch
         {'space', 120},
-        {'btn', 'New...'},
-        {'btn', 'Open Other...'},
-        {'btn', 'Open', default = true},
+        {'btn', NEW_BTN},
+        {'btn', OPEN_OTHER_BTN},
+        {'btn', OPEN_BTN, default = true},
       },
     },
   }
@@ -360,9 +364,9 @@ function lib:showSplash()
   end
 
   function dlg.btn(dlg, btn_name)
-    if btn_name == 'New...' then
+    if btn_name == NEW_BTN then
       private.dialog.newProject(self)
-    elseif btn_name == 'Open...' then
+    elseif btn_name == OPEN_OTHER_BTN then
       private.dialog.openProject(self)
     elseif #data > 0 then
       openFile(data[1])

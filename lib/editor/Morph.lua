@@ -195,6 +195,7 @@ function private.set:processes(data)
 end
 
 function private.set:_views(data)
+  print(yaml.dump(data))
   local views = self.zone.views
   for name, info in pairs(data) do
     local view = views[name]

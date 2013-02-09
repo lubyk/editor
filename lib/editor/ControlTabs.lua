@@ -15,14 +15,29 @@ local private = {}
 function lib:init(zone_view)
   self.zone_view = zone_view
   self.zone = zone_view.zone
+  self.tab_names = {}
 end
 
 function lib:addView(name, def)
+  local view_name = string.match(name, '^%d+_(.+)$') or name
   local view = editor.ControlView(name, def, self.zone)
-  self:insertTab(-1, view, name)
-  if self:count() == 2 then
-    self:selectTab(1)
+  -- insert sorted
+  local done 
+  for i, tab_name in ipairs(self.tab_names) do
+    if name < tab_name then
+      table.insert(self.tab_names, i, name)
+      self:insertTab(i, view, view_name)
+      done = true
+      break
+    end
   end
+
+  if not done then
+    table.insert(self.tab_names, name)
+    self:addTab(view, view_name)
+  end
+
+  self:selectTab(1)
   return view
 end
 
@@ -80,6 +95,7 @@ function lib:addPlusView()
     end
   end
   self:addTab(self.add_tab, '+')
+  table.insert(self.tab_names, '_+')
 end
 
 function lib:removePlusView()
