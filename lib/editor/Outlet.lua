@@ -70,20 +70,26 @@ end})
 function lib:set(def)
   local links_by_target = self.links_by_target
   if def.links then
-    for target_url, link_def in pairs(def.links) do
-      local link = links_by_target[target_url]
-      if link then
-        -- update/remove
-        if not link_def then
-          link:delete()
-        else
-          link:set(link_def)
+    -- Change later
+    -- FIXME: This is an ugly hack...
+    local key = {}
+    self[key] = lk.Thread(function()
+      for target_url, link_def in pairs(def.links) do
+        local link = links_by_target[target_url]
+        if link then
+          -- update/remove
+          if not link_def then
+            link:delete()
+          else
+            link:set(link_def)
+          end
+        elseif link_def then
+          -- create
+          createLink(self, target_url, link_def)
         end
-      elseif link_def then
-        -- create
-        createLink(self, target_url, link_def)
       end
-    end
+      self[key] = nil
+    end)
   end
 end
 

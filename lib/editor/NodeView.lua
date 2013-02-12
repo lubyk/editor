@@ -26,6 +26,7 @@ local MINW         = 60
 local GHOST_ALPHA  = 0.3
 local SELECTED_COLOR_VALUE = 0.6
 local START_DRAG_DIST = 4
+local DRAG_CORNER = 20
 
 local function updateSlotViews(list)
   for _, slot in ipairs(list) do
@@ -84,7 +85,7 @@ function lib:init(node, parent_view)
   self.zone = node.zone
   self:setName(node.name)
   if parent_view then
-    -- If we do not cache these, they endup wrong (resized callback?)
+    -- If we do not cache these, they end up wrong (resized callback?)
     local w, h = self.w, self.h
     parent_view:addWidget(self)
     self:resize(w, h)
@@ -110,6 +111,7 @@ end
 function lib:setName(name)
   self.name  = name
   local w, h = self.super:textSize(name)
+  -- FIXME: Get min w from patch settings (set from GUI)
   self.w = math.max(w + 2 * TEXT_HPADDING + 2*PAD, MINW)
   self.h = h + 2 * TEXT_VPADDING + 2*PAD
   self:setSizeHint(self.w, self.h)
@@ -215,6 +217,12 @@ function lib:click(x, y, op, btn, mod)
   elseif op == MousePress then
     -- store position but only start drag when moved START_DRAG_DIST away
     self.click_position = {x = x, y = y}
+    if x > self.w - DRAG_CORNER and y > self.h - DRAG_CORNER then
+      -- resize
+      self.resizing = true
+    else
+      self.resizing = false
+    end
   elseif op == DoubleClick then
     -- open external editor
     node:edit()
@@ -366,27 +374,37 @@ function lib:mouse(x, y)
     local zone = self.node.process.zone
     local ghost = node.ghost
     local gpx, gpy = self.node.process.view:globalPosition()
-    local gx = gpx + node.x + x - self.click_position.x
-    local gy = gpy + node.y + y - self.click_position.y
-    ghost:globalMove(gx, gy)
 
-    local old_process_view_under = zone.process_view_under
-    local pv = zone:processViewAtGlobal(gx + self.click_position.x, gy + self.click_position.y)
+    if self.resizing then
+      -- resizing
+      local w = self.w + x - self.click_position.x
+      local h = self.h + y - self.click_position.y
+      self.click_position.x = x
+      self.click_position.y = y
+      self:resize(w, h)
+    else
+      local gx = gpx + node.x + x - self.click_position.x
+      local gy = gpy + node.y + y - self.click_position.y
+      ghost:globalMove(gx, gy)
 
-    zone.process_view_under = pv
+      local old_process_view_under = zone.process_view_under
+      local pv = zone:processViewAtGlobal(gx + self.click_position.x, gy + self.click_position.y)
 
-    if pv then
-      if pv == (node.process and node.process.view) then
-        pv.highlight = false
-      else
-        pv.highlight = true
+      zone.process_view_under = pv
+
+      if pv then
+        if pv == (node.process and node.process.view) then
+          pv.highlight = false
+        else
+          pv.highlight = true
+        end
+        pv:update()
       end
-      pv:update()
-    end
 
-    if old_process_view_under and old_process_view_under ~= pv then
-      old_process_view_under.highlight = false
-      old_process_view_under:update()
+      if old_process_view_under and old_process_view_under ~= pv then
+        old_process_view_under.highlight = false
+        old_process_view_under:update()
+      end
     end
 
     ghost:updateView()

@@ -312,6 +312,10 @@ function private.control:drag()
     self.ghost = ctor()
     self.ghost.is_ghost = true
     -- Add to currently selected view
+    print('1', self.zone)
+    print('2', self.zone.view)
+    print('3', self.zone.view.control_tabs)
+    print('4', self.zone.view.control_tabs:currentWidget())
     self.zone.view.control_tabs:currentWidget():addWidget(self.ghost)
     self.ghost:show()
   end

@@ -345,7 +345,6 @@ function private:getParams()
   local params  = self.params
   for _, e in ipairs(PARAM_NAMES) do
     local k, name = e[1], e[2]
-    print(k, name)
     table.insert(tbl, name)
     table.insert(tbl, {'input', k, params[k] or DEFAULT[k]})
   end

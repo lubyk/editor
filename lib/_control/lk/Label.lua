@@ -17,7 +17,7 @@ local const = {
   },
   DEFAULT = {
     w = 80,
-    h = 40,
+    h = 20,
     font_size = 16,
     text = '--',
   },
