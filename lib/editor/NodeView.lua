@@ -57,6 +57,7 @@ local function placeSlots(self, slot_list, x, y, max_x)
 end
 
 local function placeElements(self)
+  private.setMinSize(self)
   -- inlets
   placeSlots(self,
     self.node.slots.inlets,
@@ -110,13 +111,7 @@ end
 
 function lib:setName(name)
   self.name  = name
-  local w, h = self.super:textSize(name)
-  -- FIXME: Get min w from patch settings (set from GUI)
-  self.w = math.max(w + 2 * TEXT_HPADDING + 2*PAD, MINW)
-  self.h = h + 2 * TEXT_VPADDING + 2*PAD
-  self:setSizeHint(self.w, self.h)
-  self:setSizePolicy(mimas.Minimum, mimas.Fixed)
-  self:update()
+  private.setMinSize(self)
 end
 
 function lib:animate(typ, max_wait, timeout_clbk)
@@ -217,12 +212,13 @@ function lib:click(x, y, op, btn, mod)
   elseif op == MousePress then
     -- store position but only start drag when moved START_DRAG_DIST away
     self.click_position = {x = x, y = y}
-    if x > self.w - DRAG_CORNER and y > self.h - DRAG_CORNER then
-      -- resize
-      self.resizing = true
-    else
+    -- DISABLE RESIZING. BETTER TO HAVE A WIDTH FIXED BY SLOT AND TITLE.
+    --if x > self.w - DRAG_CORNER and y > self.h - DRAG_CORNER then
+    --  -- resize
+    --  self.resizing = true
+    --else
       self.resizing = false
-    end
+    --end
   elseif op == DoubleClick then
     -- open external editor
     node:edit()
@@ -447,4 +443,19 @@ function private:showContextMenu(gx, gy)
   end)
 
   menu:popup(gx - 5, gy - 5)
+end
+
+function private:setMinSize()
+  local w, h = self.super:textSize(self.name)
+  local slots = self.node.slots
+  local count = math.max(#slots.outlets, #slots.inlets)
+  local slot_w = PAD + TEXT_HPADDING +
+                 count * (SLOTW + SLOT_PADDING)
+
+  self.w = math.max(w + 2 * TEXT_HPADDING + 2*PAD, MINW, slot_w)
+  self.h = h + 2 * TEXT_VPADDING + 2*PAD
+  self:setSizeHint(self.w, self.h)
+  self:setSizePolicy(mimas.Minimum, mimas.Fixed)
+  self:resize(self.w, self.h)
+  self:update()
 end
