@@ -49,7 +49,7 @@ function lib:control(x, y, typ)
   if self.dir == 'Horizontal' then
     v = math.floor(x * self.n / self.w)
   else
-    v = math.floor((self.h - y) * self.n / self.h)
+    v = math.ceil((self.h - y) * self.n / self.h) - 1
   end
   if typ == MouseMove and v == cs.remote_value then return end
   cs.change(v)
@@ -85,13 +85,13 @@ function lib:paintControl(p, w, h)
   else
     elem_sz = self.h / self.n
     if rv then
-      fill_pos = rv * elem_sz
+      fill_pos = (rv+1) * elem_sz
       p:fillRect(0, h - fill_pos, w, elem_sz, self.fill_color)
     end
 
     if self.show_thumb then
       -- thumb
-      local thumb_pos = cs.value * elem_sz
+      local thumb_pos = (cs.value+1) * elem_sz
       p:fillRect(0, h - thumb_pos, w, elem_sz, self.thumb_color)
     end
     
