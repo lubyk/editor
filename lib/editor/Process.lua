@@ -87,7 +87,7 @@ function lib:restart()
 
   local view = self.view
   if view then
-    view:animate(8000)
+    view:animate(8)
 
     -- Remove ghost on process connection
     self.zone:onProcessDisconnected(self.name, function()
@@ -106,7 +106,7 @@ function lib:remove(skip_morph)
   self.known_to_morph = false
   local view = self.view
   if view then
-    view:animate(8000)
+    view:animate(8)
 
     -- Remove ghost on process connection
     self.zone:onProcessDisconnected(name, function()
@@ -159,7 +159,7 @@ function lib:set(definition)
         end
       end
       if curr and curr.view then
-        curr.view:animate(v.typ, 400)
+        curr.view:animate(v.typ, 0.4)
       end
       self.zone:log(v)
     else

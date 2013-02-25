@@ -132,7 +132,7 @@ function lib:animate(typ, max_wait, timeout_clbk)
     local i = 0
     while t <= max_wait do
       i = i + 1
-      sleep(50)
+      sleep(0.5)
       t = elapsed() - start_time
       -- blink 
       local sat = (0.75 + 0.2 * math.cos(t * math.pi / 750)) % 1.0

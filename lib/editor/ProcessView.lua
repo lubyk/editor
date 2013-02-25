@@ -68,7 +68,7 @@ function lib:animate(max_wait, timeout_clbk)
     local i = 0
     while t <= max_wait do
       i = i + 1
-      sleep(50)
+      sleep(0.05)
       t = elapsed() - start_time
       -- blink while waiting for creation
       local sat = (0.75 + 0.2 * math.cos(t * math.pi / 750)) % 1.0

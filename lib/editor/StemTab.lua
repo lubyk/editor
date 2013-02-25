@@ -22,7 +22,7 @@ local START_DRAG_DIST = 4
 local PEN_WIDTH       = 2
 local EDIT_WIDTH = 80
 local EDIT_PADDING = 3
-local MAX_WAIT_MS = 8000
+local MAX_WAIT_MS = 8
 
 function lib:init(stem)
   self.process = stem
