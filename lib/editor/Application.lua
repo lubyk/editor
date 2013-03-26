@@ -29,6 +29,7 @@ function lib.new()
       self.need_install = true
     end
   end
+  self:setTheme(editor.Settings.theme or 'dark')
   return self
 end
 

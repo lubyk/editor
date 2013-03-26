@@ -139,10 +139,16 @@ function lib:updateView()
   self.view:updateView()
 end
 
+local BG_VALUE           = app.theme.style == 'light' and 0.9 or 0.2
+local BG_CVALUE          = app.theme.style == 'light' and 0.6 or 0.8
+local SELECTED_BG_VALUE  = app.theme.style == 'light' and 0.7 or 0.6
+-- Used by NodeView
+lib.SELECTED_BG_VALUE = SELECTED_BG_VALUE
+
 function lib:setHue(hue)
   self.hue      = hue
-  self.color    = mimas.Color(self.hue, 0.3, 0.8, 0.8)
-  self.bg_color = mimas.Color(self.hue, 0.2, 0.2)
+  self.color    = mimas.Color(self.hue, 0.3, BG_CVALUE) --, 0.8)
+  self.bg_color = mimas.Color(self.hue, 0.2, BG_VALUE)
 end
 
 function lib:disconnectProcess(process)
@@ -255,59 +261,6 @@ function lib.makeGhost(node_def, zone)
   return ghost
 end
 
--- We received new parameter values from remote, update the controls.
-function private:setParams(def, reset_params)
-  if reset_params then private.resetParams(self, def) end
-
-  local params = self.params
-  for k, v in pairs(def) do
-    if type(v) == 'table' then
-      -- Multi valued parameter
-      local param = params[k]
-      if not param or type(param) ~= 'table' then
-        param = {}
-        params[k] = param
-      end
-      for sk, sv in pairs(v) do
-        param[sk] = sv
-        local list = self.controls[k..'.'..sk]
-        if list then
-          for _, conn in ipairs(list) do
-            conn.changed(sv)
-          end
-        end
-      end
-    else
-      params[k] = v
-      local list = self.controls[k]
-      if list then
-        for _, conn in ipairs(list) do
-          conn.changed(v)
-        end
-      end
-    end
-  end
-end
-
-function private:resetParams(def)
-  self.params = {}
-
-  for k, list in pairs(self.controls) do
-    if def[k] == nil then
-      -- disconnect
-      for _, conn in ipairs(list) do
-        conn.node = nil
-        conn.node_conn_list = nil
-        conn.ctrl:change {
-          connect = {
-            [conn.name] = false,
-          }
-        }
-      end
-    end
-  end
-end
-
 function lib:delete()
   self:deleteView()
   -- Disconnect controls.
@@ -378,7 +331,99 @@ function lib:disconnectConnector(conn)
   conn.node = nil
 end
 
+-- Return a view with the fields to edit all of this node's parameters.
+function lib:editView()
+  local params = { 
+    'vbox', box = true,
+  }
+  -- TODO use doc order...
+  local list = {}
+  for key, val in pairs(self.params) do
+    -- Sorted params list
+    lk.insertSorted(list, {name = key, value = val}, 'name')
+  end
+
+  for _, def in ipairs(list) do
+    print(def.name)
+    table.insert(params, def.name)
+    table.insert(params, {'input', def.name, def.value})
+  end
+
+  local dlg = mimas.SimpleDialog {
+    flag = mimas.WidgetFlag,
+    '<h3>'..self.name..'</h3>',
+    { 
+      'vbox', box = true,
+      'name',
+      {'input', 'name', self.name},
+      'hue',
+      {'input', 'hue', self.hue},
+    },
+    params,
+    {
+      'hbox', {},
+      {'btn', 'cancel'},
+      {'btn', 'OK', default=true},
+    },
+  }
+  return dlg
+end
+
 --=============================================== PRIVATE
+
+-- We received new parameter values from remote, update the controls.
+function private:setParams(def, reset_params)
+  if reset_params then private.resetParams(self, def) end
+
+  local params = self.params
+  for k, v in pairs(def) do
+    if type(v) == 'table' then
+      -- Multi valued parameter
+      local param = params[k]
+      if not param or type(param) ~= 'table' then
+        param = {}
+        params[k] = param
+      end
+      for sk, sv in pairs(v) do
+        param[sk] = sv
+        local list = self.controls[k..'.'..sk]
+        if list then
+          for _, conn in ipairs(list) do
+            conn.changed(sv)
+          end
+        end
+      end
+    else
+      params[k] = v
+      local list = self.controls[k]
+      if list then
+        for _, conn in ipairs(list) do
+          conn.changed(v)
+        end
+      end
+    end
+  end
+end
+
+function private:resetParams(def)
+  self.params = {}
+
+  for k, list in pairs(self.controls) do
+    if def[k] == nil then
+      -- disconnect
+      for _, conn in ipairs(list) do
+        conn.node = nil
+        conn.node_conn_list = nil
+        conn.ctrl:change {
+          connect = {
+            [conn.name] = false,
+          }
+        }
+      end
+    end
+  end
+end
+
 
 function private:setSlots(key, list, has_all_slots)
   local slots = self.slots[key]

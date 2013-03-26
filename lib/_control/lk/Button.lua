@@ -1,13 +1,13 @@
 --[[------------------------------------------------------
 
-  _control.lk.Message
+  _control.lk.Button
   -------------------
 
-  Simply display the last value.
+  A button (sends bang on release).
 
 --]]------------------------------------------------------
 local lib = lk.SubClass(editor.Control)
-_control.lk.Message = lib.new
+_control.lk.Button = lib.new
 
 -- default select size and options
 local const = {
@@ -25,11 +25,10 @@ local const = {
 lib.const = const
 
 function lib:init(id, view)
-  self.label = mimas.Label()
-  self.label:setAlignment(mimas.AlignCenter)
+  self.button = mimas.Button('Run')
   self:setFontSize(const.DEFAULT.font_size)
-  self:addWidget(self.label)
-  self.label:move(0,0)
+  self:addWidget(self.button)
+  self.button:move(0,0)
 
   self:initControl(id, view)
   self:setupConnectors {
@@ -43,11 +42,11 @@ end
 function lib:resized(w, h)
   self.w = w
   self.h = h
-  self.label:resize(w, h)
+  self.button:resize(w, h)
 end
 
 function lib:setFontSize(p)
-  self.label:setStyle(string.format([[
+  self.button:setStyle(string.format([[
   font-size:%ipx;
   ]], p))
 end
@@ -90,11 +89,12 @@ function lib:paintControl(p, w, h)
   end
   if v ~= self.last_v then
     self.last_v = v
-    self.label:setText(v)
+    self.button:setText(v)
   end
   -- border
-  p:fillRect(0, 0, w, h, self.fill_color)
-  p:setPen(self.pen)
-  p:setBrush(noBrush)
-  p:drawRect(0, 0, w, h)
+  -- p:fillRect(0, 0, w, h, self.fill_color)
+  -- p:setPen(self.pen)
+  -- p:setBrush(noBrush)
+  -- p:drawRect(0, 0, w, h)
 end
+

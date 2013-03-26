@@ -10,6 +10,7 @@ local lib = lk.SubClass(mimas.TabWidget)
 editor.ControlTabs = lib
 
 local private = {}
+local UPDATE_URL = lubyk.update_url
 
 -- constants
 function lib:init(zone_view)
@@ -68,7 +69,7 @@ function lib:addPlusView()
   add.dlg = mimas.SimpleDialog {
     flag = mimas.WidgetFlag,
     'Create a new view',
-    {'vbox', box=true, style='background: #222',
+    {'vbox', box=true, style='background: '..app.theme.alt_background,
       'view name',
       {'input', 'name', 'base'},
     },
@@ -95,7 +96,58 @@ function lib:addPlusView()
     end
   end
   self:addTab(self.add_tab, '+')
-  table.insert(self.tab_names, '_+')
+  -- This is to place add_tab at the end
+  table.insert(self.tab_names, '~~~')
+end
+
+function lib:addNodeView()
+  local zone = self.zone
+  local node_tab = mimas.Widget()
+  self.node_tab = node_tab
+  node_tab.lay = mimas.VBoxLayout(node_tab)
+  self:addTab(self.node_tab, ' § ')
+  -- This is to place node tab just before the end
+  table.insert(self.tab_names, '~~')
+end
+
+local makeMsg = editor.Connector.makeMsg
+
+function lib:viewNode(node)
+  local process = node.process
+  local msg = {}
+  local msg, setter, node, param_name = makeMsg(process, node:url())
+
+  local dlg = node:editView()
+  if self.node_dlg and not self.node_dlg:deleted() then
+    self.node_dlg:hide()
+  end
+  self.node_dlg = dlg
+
+  self.node_tab.lay:addWidget(dlg, 0, mimas.AlignTop + mimas.AlignLeft)
+  function dlg.btn(dlg, btn_name)
+    if btn_name == 'OK' then
+      -- send param updates
+      for k, v in pairs(dlg.form) do
+        if k == 'name' or k == 'hue' then
+          if k == 'name' then
+            -- FIXME
+          else
+            -- node change
+            msg.nodes[node.name][k] = v
+          end
+        else
+          -- param change
+          setter[k] = tonumber(v)
+        end
+      end
+      print(yaml.dump(msg))
+      process.push:send(UPDATE_URL, msg)
+    else
+      -- remove or reset dlg
+    end
+    self.node_dlg = nil
+    dlg:hide()
+  end
 end
 
 function lib:removePlusView()

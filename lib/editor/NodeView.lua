@@ -16,15 +16,15 @@ local BOX_PADDING = 1
 local HPEN_WIDTH  = 1 -- half pen width
 local BP = HPEN_WIDTH + BOX_PADDING -- full box padding
 local ARC_RADIUS = 0
-local TEXT_HPADDING = 10
-local TEXT_VPADDING = 2
+local TEXT_HPADDING = 8
+local TEXT_VPADDING = 4
 local PAD  = BP + HPEN_WIDTH -- padding for inner shape (top/left)
 local SLOTH        = editor.SlotView.SLOTH
 local SLOTW        = editor.SlotView.SLOTW
 local SLOT_PADDING = editor.SlotView.SLOT_PADDING
 local MINW         = 60
 local GHOST_ALPHA  = 0.3
-local SELECTED_COLOR_VALUE = 0.6
+local SELECTED_COLOR_VALUE = editor.Node.SELECTED_BG_VALUE
 local START_DRAG_DIST = 4
 local DRAG_CORNER = 20
 
@@ -176,10 +176,11 @@ function lib:paint(p, w, h)
   p:drawRoundedRect(BP, BP, w - 2 * BP, h - 2 * BP, ARC_RADIUS / 2)
 
   -- draw label text
+  local color = app.theme._high_color
   if self.is_ghost then
-    p:setPen(1, mimas.Color(0, 0, 1, GHOST_ALPHA))
+    p:setPen(1, color:colorWithAlpha(GHOST_ALPHA))
   else
-    p:setPen(mimas.WhitePen)
+    p:setPen(1, color)
   end
   p:drawText(PAD+TEXT_HPADDING, PAD+TEXT_VPADDING, w-2*TEXT_HPADDING-2*PAD, h - 2*TEXT_VPADDING - 2*PAD, mimas.AlignLeft + mimas.AlignVCenter, self.name)
 end
@@ -225,132 +226,10 @@ function lib:click(x, y, op, btn, mod)
     self.zone:selectNodeView(self)
   elseif op == MouseRelease then
     if node.dragging then
-      local zone = self.node.process.zone
-      -- drop
-      -- detect drop zone
-      -- Drop on prototype library ?
-
-      -- Drop on process ?
-
-      -- Drop out of process view = remove ?
-      local view = zone.process_view_under
-      if view and view.type == 'editor.LibraryView' then
-        view:dropNode(node)
-        return
-      elseif not view then
-        node.dragging = false
-        node:updateView()
-        return
-      end
-
-      local process = view.process
-
-      local gx,  gy  = node.ghost:globalPosition()
-      local gpx, gpy = process.view:globalPosition()
-      local node_x = gx - gpx
-      local node_y = gy - gpy
-
-      if node.process ~= process then
-        -- Processes to update
-        local changed_processes = {}
-        local old_process = self.node.process
-        -- moving from one process to another
-        local def = self.node:dump()
-        def.x, def.y = node_x, node_y
-
-        -- Remove from old process
-        changed_processes[old_process] = {
-          nodes = {
-            [self.node.name] = false,
-          }
-        }
-        -- Add in new process
-        changed_processes[process] = {
-          nodes = {
-            [self.node.name] = def,
-          }
-        }
-        ---- Update all incoming links
-        local old_process_len = string.len(old_process:url())
-        for _, inlet in ipairs(self.node.slots.inlets) do
-          local url = process:url() .. string.sub(inlet:url(), old_process_len + 1)
-          for _,link in ipairs(inlet.links) do
-            local node = link.source.node
-            lk.deepMerge(changed_processes, node.process, {
-              nodes = {
-                [node.name] = {
-                  links = {
-                    [link.source.name] = {
-                      -- remove old link
-                      [inlet:url()] = false,
-                      -- create new link
-                      [url] = true,
-                    }
-                  }
-                }
-              }
-            })
-          end
-        end
-        ---- Update all views
-        local base_url = old_process:url() .. '/' .. node.name .. '/'
-        local new_url  = process:url() .. '/' .. node.name .. '/'
-        local base_url_len = string.len(base_url)
-        for view_name, view in pairs(self.zone.views) do
-          for wid_id, widget in pairs(view.cache) do
-            local connect = widget.connect
-            -- connect:
-            --   s:
-            --     min: 0
-            --     url: /a/three/_/x
-            --     max: 1
-            if connect then
-              for dir, def in pairs(connect) do
-                if def then
-                  target = def.url
-                  if string.sub(target, 1, base_url_len) == base_url then
-                    -- Update
-                    local new_target = new_url .. string.sub(target, base_url_len + 1)
-                    lk.deepMerge(changed_processes, self.zone.morph, {
-                      _views = {
-                        [view_name] = {
-                          [wid_id] = {
-                            connect = {
-                              [dir] = {
-                                url = new_target,
-                              }
-                            }
-                          }
-                        }
-                      }
-                    })
-                  end
-                end
-              end
-            end
-          end
-        end
-
-        -- Execute receipt
-        for p, def in pairs(changed_processes) do
-          p:change(def)
-        end
-      else
-        -- Process did not change: simply move back.
-        local zone = self.node.process.zone
-        local pv = zone.process_view_under
-        zone.process_view_under = nil
-        if pv then pv:update() end
-
-        node.dragging = false
-        local ghost_x, ghost_y = node.ghost:position()
-        node:change {
-          x = node_x,
-          y = node_y,
-        }
-      end
+      private.endDrag(self)
     else
       self.zone:selectNodeView(self, mod == mimas.ShiftModifier)
+      self.zone.control_tabs:viewNode(node)
     end
   end
 end
@@ -458,4 +337,132 @@ function private:setMinSize()
   self:setSizePolicy(mimas.Minimum, mimas.Fixed)
   self:resize(self.w, self.h)
   self:update()
+end
+
+function private:endDrag()
+  local node = self.node
+  local zone = self.node.process.zone
+  -- drop
+  -- detect drop zone
+  -- Drop on prototype library ?
+
+  -- Drop on process ?
+
+  -- Drop out of process view = remove ?
+  local view = zone.process_view_under
+  if view and view.type == 'editor.LibraryView' then
+    view:dropNode(node)
+    return
+  elseif not view then
+    node.dragging = false
+    node:updateView()
+    return
+  end
+
+  local process = view.process
+
+  local gx,  gy  = node.ghost:globalPosition()
+  local gpx, gpy = process.view:globalPosition()
+  local node_x = gx - gpx
+  local node_y = gy - gpy
+
+  if node.process ~= process then
+    -- Processes to update
+    local changed_processes = {}
+    local old_process = self.node.process
+    -- moving from one process to another
+    local def = self.node:dump()
+    def.x, def.y = node_x, node_y
+
+    -- Remove from old process
+    changed_processes[old_process] = {
+      nodes = {
+        [self.node.name] = false,
+      }
+    }
+    -- Add in new process
+    changed_processes[process] = {
+      nodes = {
+        [self.node.name] = def,
+      }
+    }
+    ---- Update all incoming links
+    local old_process_len = string.len(old_process:url())
+    for _, inlet in ipairs(self.node.slots.inlets) do
+      local url = process:url() .. string.sub(inlet:url(), old_process_len + 1)
+      for _,link in ipairs(inlet.links) do
+        local node = link.source.node
+        lk.deepMerge(changed_processes, node.process, {
+          nodes = {
+            [node.name] = {
+              links = {
+                [link.source.name] = {
+                  -- remove old link
+                  [inlet:url()] = false,
+                  -- create new link
+                  [url] = true,
+                }
+              }
+            }
+          }
+        })
+      end
+    end
+    ---- Update all views
+    local base_url = old_process:url() .. '/' .. node.name .. '/'
+    local new_url  = process:url() .. '/' .. node.name .. '/'
+    local base_url_len = string.len(base_url)
+    for view_name, view in pairs(self.zone.views) do
+      for wid_id, widget in pairs(view.cache) do
+        local connect = widget.connect
+        -- connect:
+        --   s:
+        --     min: 0
+        --     url: /a/three/_/x
+        --     max: 1
+        if connect then
+          for dir, def in pairs(connect) do
+            if def then
+              target = def.url
+              if string.sub(target, 1, base_url_len) == base_url then
+                -- Update
+                local new_target = new_url .. string.sub(target, base_url_len + 1)
+                lk.deepMerge(changed_processes, self.zone.morph, {
+                  _views = {
+                    [view_name] = {
+                      [wid_id] = {
+                        connect = {
+                          [dir] = {
+                            url = new_target,
+                          }
+                        }
+                      }
+                    }
+                  }
+                })
+              end
+            end
+          end
+        end
+      end
+    end
+
+    -- Execute receipt
+    for p, def in pairs(changed_processes) do
+      p:change(def)
+    end
+  else
+    -- Process did not change: simply move back.
+    local zone = self.node.process.zone
+    local pv = zone.process_view_under
+    zone.process_view_under = nil
+    if pv then pv:update() end
+
+    node.dragging = false
+    local ghost_x, ghost_y = node.ghost:position()
+    node:change {
+      x = node_x,
+      y = node_y,
+    }
+  end -- node.process ~= process
 end

@@ -197,6 +197,12 @@ function private:connect(process, url)
 
   self.url = url
 
+  self.msg, self.setter, self.node, self.param_name = lib.makeMsg(process, url)
+
+  self:setEnabled(self.node.online)
+end
+
+function lib.makeMsg(process, url)
   -- Takes a target link like '/a/metro/_/tempo'
   -- /[process]/[node](/[sub-node])/_/[param name]
   local parts = lk.split(url, '/')
@@ -204,12 +210,16 @@ function private:connect(process, url)
   table.remove(parts, 1)
   -- Remove process name.
   table.remove(parts, 1)
-  local param_name = parts[#parts]
-  self.param_name = param_name
-  -- Remove param name.
-  table.remove(parts, #parts)
-  -- Remove '_' (param indicator).
-  table.remove(parts, #parts)
+
+  local param_name
+  if string.match(url, '/_/[^/]+$') then
+    param_name = parts[#parts]
+    -- Remove param name.
+    table.remove(parts, #parts)
+    -- Remove '_' (param indicator).
+    table.remove(parts, #parts)
+  end
+
   -- Build msg template.
   local msg = {nodes = {}}
   local path = msg.nodes
@@ -222,12 +232,7 @@ function private:connect(process, url)
     node = node:findNode(part)
   end
   path._ = {}
-
-  self.param_name = param_name
-  self.setter = path._
-  self.msg    = msg
-  self.node   = node
-  self:setEnabled(node.online)
+  return msg, path._, node, param_name
 end
 
 --[[

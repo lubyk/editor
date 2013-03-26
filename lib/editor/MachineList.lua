@@ -85,7 +85,7 @@ function lib:getMachine(name, ip)
 
   local machine = machine_by_name or machine_by_ip
   if not machine then
-    printf("new machine: %s %s", name or 'nil', ip or 'nil')
+    print(string.format("new machine: %s %s", name or 'nil', ip or 'nil'))
     local ref = name or ip or '-'
     -- Create machine
     machine = editor.Machine(ref, self)

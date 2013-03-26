@@ -283,7 +283,7 @@ function private.dialog:addView()
   self:hideDialog()
   local dlg = mimas.SimpleDialog {
     'Create a new view',
-    {'vbox', box=true, style='background: #222',
+    {'vbox', box=true, style='background: '..app.theme.alt_background,
       'view name',
       {'input', 'name', 'base'},
     },

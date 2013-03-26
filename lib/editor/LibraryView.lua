@@ -186,12 +186,12 @@ function private:setupListView()
     name = name or fullname
     local tw, th = view.super:textSize(base)
     if base then
-      p:setPen(mimas.Pen(1, mimas.Color(0, 0, 0.4)))
+      p:setPen(mimas.Pen(1, app.theme._color ))
       p:drawText(x+6, y+2, tw+3, th+2, align, base)
       x = x + 7 + tw
     end
 
-    p:setPen(mimas.Pen(1, mimas.Color(0, 0, 0.8)))
+    p:setPen(mimas.Pen(1, app.theme._high_color))
     local tw, th = view.super:textSize(name)
     p:drawText(x+2, y+2, tw+5, th+2, align, name)
   end

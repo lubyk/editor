@@ -36,6 +36,8 @@ function lib:init(slot)
   self:resize(SLOTW, SLOTH)
 end
 
+-- local BG_VALUE = app.theme == mimas.Application.LIGHT_STYLE and 0.8 or 0.5
+
 -- custom paint
 function lib:paint(p, w, h)
 --  p:setPen(mimas.NoPen)
@@ -44,9 +46,9 @@ function lib:paint(p, w, h)
   local color
 
   if self.zone.closest_slot_view == self then
-    color = self.node.color:colorWithValue(1)
+    color = self.node.color:colorWithSaturation(1)
   else
-    color = self.node.color:colorWithValue(0.5)
+    color = self.node.color --:colorWith(BG_VALUE)
   end
   p:fillRect(0, 0, w, h, color)
 end

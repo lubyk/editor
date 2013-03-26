@@ -123,6 +123,7 @@ function lib:updateView()
   if not self.view then
     self.view = editor.SlotView(self)
     self.node.view:addWidget(self.view)
+    self.view:raise()
   elseif self.node.ghost then
     -- not has a ghost but we don't, create one
     if not self.ghost then

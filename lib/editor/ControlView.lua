@@ -114,5 +114,5 @@ function lib:change(def)
 end
 
 function lib:paint(p, w, h)
-  p:fillRect(0, 0, w, h, mimas.Color(0, 0, 0.12))
+  p:fillRect(0, 0, w, h, app.theme._background)
 end

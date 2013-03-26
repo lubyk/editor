@@ -45,7 +45,9 @@ function lib:connect(service)
   if self.tab then
     self.tab:setHue()
   end
-  self.zone.control_tabs:addPlusView()
+  local ct = self.zone.control_tabs
+  ct:addNodeView()
+  ct:addPlusView()
   self.zone.view:hideDialog()
 
   private.mountDav(self)
@@ -116,11 +118,25 @@ end
 
 function private:mountDav()
   local work_path = self.zone:workPath()
+  -- unmount first ?
+  -- io.popen(string.format('umount %s', work_path))
+
   -- mount morph DAV server
   self.dav_url = string.format('http://%s:%i', self.ip, self.davport)
   -- option -S == do not prompt when server goes offline
   local cmd = string.format('mount_webdav -S %s %s', self.dav_url, work_path)
-  self.mount_fd = io.popen(cmd)
+  -- TODO: retry in Lua in case mount fails ? (but why would it fail ?).
+  if false then
+    sched:try(function()
+      print('try', cmd)
+      return os.execute(cmd) == 0
+    end, function()
+      print('Failed to mount', cmd)
+    end)
+  else
+    cmd = string.format('%s || sleep 2 && %s', cmd, cmd)
+    self.mount_fd = io.popen(cmd)
+  end
 end
 
 function private:unmountDav()

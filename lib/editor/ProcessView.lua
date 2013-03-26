@@ -89,10 +89,14 @@ function lib:animate(max_wait, timeout_clbk)
   end)
 end
 
+local BG_VALUE  = app.theme.style == 'light' and 0.8 or 0.2
+local BG_SAT    = app.theme.style == 'light' and 0.1 or 0.2
+local LBL_VALUE = app.theme.style == 'light' and 0.8 or 0.5
+
 function lib:setHue(hue)
   self.pen_color = mimas.Color(self.process.hue, 0.3, 0.8, 0.5)
-  self.lbl_back  = mimas.Brush(self.process.hue, 0.5, 0.5, 0.5)
-  self.back      = mimas.Brush(self.process.hue, 0.2, 0.2, 0.5)
+  self.lbl_back  = mimas.Brush(self.process.hue, 0.5, LBL_VALUE, 0.5)
+  self.back      = mimas.Brush(self.process.hue, BG_SAT, BG_VALUE,  0.5)
 
   self:update()
 end
@@ -110,7 +114,7 @@ function lib:paint(p, w, h)
     -- under drag operation
     back = mimas.Brush(self.process.hue, 0.3, 0.5, 0.5)
   end
-  editor.paintWithRoundedTitle(p, w, h, self.name, self.lbl_w, self.lbl_h, pen_color, mimas.Color(0, 0, 1), self.lbl_back, back)
+  editor.paintWithRoundedTitle(p, w, h, self.name, self.lbl_w, self.lbl_h, pen_color, app.theme._high_color, self.lbl_back, back)
 end
 
 function lib:delete()
@@ -236,7 +240,6 @@ local function makeGhost(self)
 end
 
 function lib:mouse(x, y)
-  print('MOUSE', x, y)
   local process = self.process
   if self.click_position and not process.dragging and manhattanDist(self.click_position, {x=x,y=y}) > START_DRAG_DIST then
     -- start drag operation: self becomes ghost

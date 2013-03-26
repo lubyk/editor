@@ -154,21 +154,21 @@ function private:makeList()
   list:setAttribute(mimas.WA_MacShowFocusRect, false)
   list:enableHtml(true,
   -- CSS rules
-  [[
+  app:compileCss [[
    body {
      margin:0;
      padding:0;
      font-size:11px;
-     color:#B4B4B4;
+     color:@color;
    }
    body.two {
-     background:#222;
+     background:@alt_background;
    }
    body.three {
-     background:#292929;
+     background:@alt2_background;
    }
    body.selected {
-     background:#6E4E24;
+     background:@selected;
    }
    p {
     margin:0;padding:0;
@@ -179,7 +179,7 @@ function private:makeList()
    }
    p.error .url { color:red; }
    p.warn .url { color:orange;}
-   p span { font-size:12px; color:white;}
+   p span { font-size:12px; color:@high_color;}
   ]]
   )
   self.lay:addWidget(list)

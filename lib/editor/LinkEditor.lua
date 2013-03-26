@@ -141,11 +141,7 @@ function lib:setNode(node)
   local list = {}
   for key, val in pairs(node.params) do
     -- Sorted params list
-    local i = 1
-    while list[i] and key >= list[i] do
-      i = i + 1
-    end
-    table.insert(list, i, key)
+    lk.insertSorted(list, key)
   end
 
   for _, name in ipairs(list) do
