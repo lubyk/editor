@@ -199,7 +199,25 @@ function private:connect(process, url)
 
   self.msg, self.setter, self.node, self.param_name = lib.makeMsg(process, url)
 
+
+  self:updateToolTip()
   self:setEnabled(self.node.online)
+end
+
+function lib:updateToolTip()
+  if not self.node or not self.ctrl then return end
+  local doc = self.node:getDoc()
+  local title = '<b>'..self.node:url()..': '..self.param_name..'</b>'
+  if doc.params.p then
+    local tip = doc.params.p[self.param_name]
+    -- TODO: we could use getDoc to do some parsing to extract info.
+    tip = ((tip or {})[1]).text
+    if tip then
+      self.ctrl:setToolTip(title..' '..tip)
+      return
+    end
+  end
+  self.ctrl:setToolTip(title)
 end
 
 function lib.makeMsg(process, url)

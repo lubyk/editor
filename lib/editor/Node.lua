@@ -331,8 +331,35 @@ function lib:disconnectConnector(conn)
   conn.node = nil
 end
 
--- Return a view with the fields to edit all of this node's parameters.
+-- Return a TableView with the fields to edit all of this
+-- node's parameters.
 function lib:editView()
+  local params = { 
+  }
+  local doc = self:getDoc()
+
+  local list = {}
+  if doc.params.p then
+    for _, def in ipairs(doc.params.p) do
+      local key = def.tparam
+      -- Sorted params list
+      info = (def[1] or {}).text
+      table.insert(list, {name = key, value = self.params[key], info = info})
+    end
+  else
+    for key, value in pairs(self.params) do
+      lk.insertSorted(list, {name = key, value = value}, 'name')
+    end
+  end
+
+  return list
+end
+
+-- Return a SimpleDialog view with the fields to edit all of this
+-- node's parameters.
+--
+-- TODO: not used
+function lib:editDialog()
   local params = { 
     'vbox', box = true,
   }
@@ -477,9 +504,23 @@ end
 function private:setCode(code)
   if self.code ~= code then
     self.code = code
+    self.doc  = nil
     local lv = self.zone.view.log_view
     if lv and lv.selected and lv.selected.url == self:url() and lv.locked then
       lv:unlock()
     end
+
+    for k, list in pairs(self.controls) do
+      for _, conn in ipairs(list) do
+        conn:updateToolTip()
+      end
+    end
   end
+end
+
+function lib:getDoc()
+  if not self.doc then
+    self.doc = lk.Doc(nil, {name = self.name, code = self.code})
+  end
+  return self.doc
 end

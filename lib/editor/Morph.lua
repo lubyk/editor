@@ -117,6 +117,7 @@ end
 --=============================================== PRIVATE
 
 function private:mountDav()
+  print('mountDav')
   local work_path = self.zone:workPath()
   -- unmount first ?
   -- io.popen(string.format('umount %s', work_path))
@@ -137,6 +138,7 @@ function private:mountDav()
     cmd = string.format('%s || sleep 2 && %s', cmd, cmd)
     self.mount_fd = io.popen(cmd)
   end
+  print('mountDav DONE')
 end
 
 function private:unmountDav()
