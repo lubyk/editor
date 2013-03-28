@@ -29,6 +29,7 @@ lib.SLOTH = SLOTH
 lib.SLOT_PADDING = SLOT_PADDING
 
 function lib:init(slot)
+  self:setToolTip(slot.name)
   self.type = slot.type
   self.slot = slot
   self.node = slot.node
@@ -132,6 +133,10 @@ function lib:mouse(x, y)
         if old_closest then
           old_closest:update()
         end
+        local gx, gy = view:globalPosition()
+        -- To make usre it is moved
+        app:hideToolTip()
+        app:showToolTip(gx, gy, view.slot.name)
         view:update()
       end
     elseif old_closest then

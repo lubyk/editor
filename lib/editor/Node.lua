@@ -307,9 +307,9 @@ function lib:connectConnector(conn)
   table.insert(list, conn)
   -- Avoid list GC before last connection.
   conn.node_conn_list = list
-  local value = self.params[param_name]
-  if value then
-    conn.changed(value)
+  local param = self.params[param_name]
+  if param then
+    conn.changed(param.value)
   end
 end
 
@@ -334,23 +334,45 @@ end
 -- Return a TableView with the fields to edit all of this
 -- node's parameters.
 function lib:editView()
-  local params = { 
-  }
-  local doc = self:getDoc()
+  -- This gives us the parameter definition.
+  local params = self.params
+  -- This is from the comments.
+  local doc    = self:getDoc()
 
   local list = {}
+  local para
   if doc.params.p then
     for _, def in ipairs(doc.params.p) do
       local key = def.tparam
       -- Sorted params list
+      -- TODO: Optimize by storing a cached value built in "getDoc".
       info = (def[1] or {}).text
-      table.insert(list, {name = key, value = self.params[key], info = info})
+      local param = params[key]
+      table.insert(list, {
+        name  = key,
+        write = param.default ~= nil,
+        value = param.value,
+        min   = param.min,
+        max   = param.max,
+        unit  = param.unit,
+        info  = info,
+      })
     end
   else
-    for key, value in pairs(self.params) do
-      lk.insertSorted(list, {name = key, value = value}, 'name')
+    for key, param in pairs(self.params) do
+      lk.insertSorted(list, {
+        name  = key,
+        write = param.default ~= nil,
+        value = param.value,
+        min   = param.min,
+        max   = param.max,
+        unit  = param.unit,
+      }, 'name')
     end
   end
+  table.insert(list, {name = 'node', value = '', title = true})
+  table.insert(list, {name = 'name', value = self.name})
+  table.insert(list, {name = 'hue',  write = true, value = self.hue})
 
   return list
 end
@@ -404,31 +426,33 @@ function private:setParams(def, reset_params)
 
   local params = self.params
   for k, v in pairs(def) do
+    local list = self.controls[k]
     if type(v) == 'table' then
-      -- Multi valued parameter
-      local param = params[k]
-      if not param or type(param) ~= 'table' then
-        param = {}
-        params[k] = param
-      end
-      for sk, sv in pairs(v) do
-        param[sk] = sv
-        local list = self.controls[k..'.'..sk]
-        if list then
-          for _, conn in ipairs(list) do
-            conn.changed(sv)
-          end
+      -- Parameter definition change.
+      params[k] = v
+      if list then
+        for _, conn in ipairs(list) do
+          -- TODO: update min/max/unit/info settings.
+          -- conn.changed(v)
         end
       end
     else
-      params[k] = v
-      local list = self.controls[k]
+      -- Value change
+
+      -- This is needed first connect operations.
+      params[k].value = v
+
       if list then
         for _, conn in ipairs(list) do
           conn.changed(v)
         end
       end
     end
+  end
+
+  if self.reload_edit_view then
+    -- Update control view
+    self.reload_edit_view()
   end
 end
 
@@ -520,6 +544,8 @@ end
 
 function lib:getDoc()
   if not self.doc then
+    -- We could store only needed content (but it might be nice to also
+    -- document inlets/outlets ?)
     self.doc = lk.Doc(nil, {name = self.name, code = self.code})
   end
   return self.doc

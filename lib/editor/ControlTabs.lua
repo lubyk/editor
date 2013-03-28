@@ -112,7 +112,8 @@ function lib:addNodeView()
   node_tab.msg:setStyle 'font-size:14px; background:#ddd; border:1px solid #999; padding:10px; vertical-align:top'
   node_tab.msg:setMinimumSize(200, 110)
   node_tab.msg:setAlignment(mimas.AlignTop + mimas.AlignLeft)
-  node_tab.lay:addWidget(node_tab.msg, 0) --, mimas.AlignLeft + mimas.AlignTop)
+  node_tab.lay:addWidget(node_tab.msg, 0)
+  node_tab.msg:hide()
   self:addTab(self.node_tab, ' § ')
   -- This is to place node tab just before the end
   table.insert(self.tab_names, '~~')
@@ -120,14 +121,14 @@ end
 
 local makeMsg = editor.Connector.makeMsg
 
-function lib:viewNode(node)
+function lib:viewNode(node, reload)
   local process = node.process
   local msg = {}
   local msg, setter, node, param_name = makeMsg(process, node:url())
 
-  local list = node:editView()
+  self.tv_list = node:editView()
   local has_msg = false
-  for _, elem in ipairs(list) do
+  for _, elem in ipairs(self.tv_list) do
     if elem.info then
       has_msg = true
       break
@@ -141,16 +142,17 @@ function lib:viewNode(node)
     tooltip:show()
   end
 
-
-  local titles = {'Results', 'Advanced', 'More', 'ThisThat'}
-  for i, _ in ipairs(list) do
-    if i % 6 == 0 then
-      table.insert(list, i, {name = titles[i/6], value = '', title = true})
-    end
+  if reload then
+    self.node_dlg:reset()
+    return
   end
 
   if self.node_dlg and not self.node_dlg:deleted() then
     self.node_dlg:hide()
+  end
+
+  if self.selected_node then
+    self.selected_node.reload_edit_view = nil
   end
 
   --=============================================== 
@@ -165,6 +167,32 @@ function lib:viewNode(node)
   )
   tv:setAlternatingRowColors(true)
 
+  self.selected_node = node
+  node.reload_edit_view = function()
+    local row, col = tv:currentIndex()
+    self:viewNode(node, true)
+    tv:setCurrentIndex(row, col)
+  end
+
+  local function changed(k, v)
+    if k == 'name' or k == 'hue' then
+      if k == 'name' then
+        -- FIXME: not supported yet.
+      else
+        -- node change
+        msg.nodes[node.name][k] = v
+      end
+    else
+      -- param change
+      setter[k] = tonumber(v)
+    end
+    process.push:send(UPDATE_URL, msg)
+    -- Only set one parameter at a time.
+    setter[k] = nil
+  end
+
+  local ctab = self
+
   if true then
     -- use cells as headers
     --tv:setStretchHorizontal(true)
@@ -175,12 +203,12 @@ function lib:viewNode(node)
     -- tv:foobar()
 
     function tv:columnCount() return 2 end
-    function tv:rowCount() return #list end
+    function tv:rowCount() return #ctab.tv_list end
     function tv:data(row, col)
       if col == 1 then
-        return list[row].name
+        return tv:header(row, mimas.Vertical)
       else
-        return list[row].value
+        return ctab.tv_list[row].value
       end
     end
 
@@ -205,42 +233,52 @@ function lib:viewNode(node)
     end
 
     function tv:setData(row, col, value)
+      print('setData', row, col, value)
       if value == '' then return false end
-      row = list[row]
-      if row then row.value = value end
+      row = ctab.tv_list[row]
+      if row then
+        changed(row.name, value)
+        row.value = value
+      end
     end
 
-    local cell_flags = mimas.ItemIsEditable + mimas.ItemIsEnabled + mimas.ItemIsSelectable
-    local title_flags = mimas.ItemIsEnabled
+    local readonly   = mimas.ItemIsEnabled + mimas.ItemIsSelectable
+    local read_write = readonly + mimas.ItemIsEditable
     function tv:flags(row, col)
       if col == 1 then
         return 0
       else
-        return list[row].title and title_flags or cell_flags
+        return ctab.tv_list[row].write and read_write or readonly
       end
     end
 
     function tv:tooltip(row, col)
-      return '<b>'..list[row].name..'</b><br/>' ..(list[row].info or '')
+      return '<b>'..ctab.tv_list[row].name..'</b><br/>' ..(ctab.tv_list[row].info or '')
     end
 
     function tv:header(section, orientation)
       if orientation == mimas.Vertical then
-        return list[section].name
+        local elem = ctab.tv_list[section]
+        print(section, yaml.dump(elem))
+        local unit = elem.unit and (' ['..elem.unit..']') or ''
+        return elem.name .. unit
       end
     end
 
     function tv:background(row, col)
-      if list[row].title then
+      if ctab.tv_list[row].title then
         return mimas.Color(0, 0, 0.2)
       elseif col == 1 then
         -- header
         return mimas.Color(0, 0, 0.8)
+      elseif not ctab.tv_list[row].write then
+        -- readonly
+        return mimas.Color(0.2, 0.3, 0.7)
       end
     end
 
     function tv:foreground(row, col)
-      if list[row].title then
+      if ctab.tv_list[row].title then
         return mimas.Color(0, 0, 1)
       end
     end
@@ -261,9 +299,9 @@ function lib:viewNode(node)
     -- tv:foobar()
 
     function tv:columnCount() return 1 end
-    function tv:rowCount() return #list end
+    function tv:rowCount() return #ctab.tv_list end
     function tv:data(row, col)
-      return list[row].value
+      return ctab.tv_list[row].value
     end
 
     function tv:selected(row, col)
@@ -288,28 +326,31 @@ function lib:viewNode(node)
 
     function tv:setData(row, col, value)
       if value == '' then return false end
-      row = list[row]
+      row = ctab.tv_list[row]
       if row then row.value = value end
     end
 
     local cell_flags = mimas.ItemIsEditable + mimas.ItemIsEnabled + mimas.ItemIsSelectable
     local title_flags = mimas.ItemIsEnabled
     function tv:flags(row, col)
-      return list[row].title and title_flags or cell_flags
+      return ctab.tv_list[row].title and title_flags or cell_flags
     end
 
     function tv:tooltip(row, col)
-      return '<b>'..list[row].name..'</b>: ' ..list[row].info
+      return '<b>'..ctab.tv_list[row].name..'</b>: ' ..ctab.tv_list[row].info
     end
 
     function tv:header(section, orientation)
       if orientation == mimas.Vertical then
-        return list[section].name
+        local elem = ctab.tv_list[section]
+        print(section, yaml.dump(elem))
+        local unit = elem.unit and (' ['..elem.unit..']') or ''
+        return elem.name .. unit
       end
     end
 
     function tv:background(row, col)
-      if list[row].title then
+      if ctab.tv_list[row].title then
         return mimas.Color(0, 0, 0.2)
       elseif not col then
         -- header
@@ -318,7 +359,7 @@ function lib:viewNode(node)
     end
 
     function tv:foreground(row, col)
-      if list[row].title then
+      if ctab.tv_list[row].title then
         return mimas.Color(0.6, 0.9, 0.5)
       end
     end
@@ -367,4 +408,7 @@ function lib:removePlusView()
   self.add_tab:hide()
   self.add_tab:__gc()
   self.add_tab = nil
+  self.node_tab:hide()
+  self.node_tab:__gc()
+  self.node_tab = nil
 end

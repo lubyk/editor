@@ -111,6 +111,7 @@ function lib:set(def, zone)
     end
     -- ! No 'self' here.
     function self.changed(value)
+      print('changed', name, value)
       if type(value) == 'number' then
         self.raw_remote_value = value
         self.remote_value = value
